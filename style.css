@@ -10,6 +10,8 @@ body {
     color: #fff;
     min-height: 100vh;
     overflow: hidden;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 #app {
@@ -327,30 +329,144 @@ body {
     justify-content: center;
 }
 
-/* 响应式设计 */
+/* 响应式设计 - 移动端优化 */
 @media (max-width: 480px) {
+    body {
+        font-size: 16px;
+    }
+    
+    #studyRoom {
+        padding: 15px;
+        justify-content: flex-start;
+        padding-top: 60px;
+    }
+    
     .countdown {
-        font-size: 60px;
+        font-size: 90px;
+        letter-spacing: 3px;
+    }
+    
+    .timer-subtitle {
+        font-size: 18px;
+        margin-top: 15px;
+    }
+    
+    .timer-display {
+        margin-bottom: 30px;
     }
     
     .time-selector {
-        flex-wrap: wrap;
-        justify-content: center;
+        gap: 12px;
+        margin-bottom: 30px;
+        width: 100%;
+        max-width: 320px;
     }
     
     .time-btn {
-        padding: 10px 20px;
-        font-size: 12px;
+        padding: 14px 28px;
+        font-size: 16px;
+        flex: 1;
+        min-width: 85px;
+        border-radius: 10px;
+    }
+    
+    .action-buttons {
+        gap: 15px;
+        margin-bottom: 80px;
+        width: 100%;
+        max-width: 320px;
+        justify-content: center;
+    }
+    
+    .btn-primary,
+    .btn-secondary {
+        padding: 18px 45px;
+        font-size: 18px;
+        border-radius: 50px;
+        min-width: 180px;
     }
     
     .stats-bar {
-        gap: 20px;
-        padding: 12px 20px;
-        width: 90%;
+        gap: 25px;
+        padding: 18px 25px;
+        width: 95%;
+        max-width: 400px;
+        border-radius: 18px;
     }
     
     .stat-value {
-        font-size: 20px;
+        font-size: 28px;
+    }
+    
+    .stat-label {
+        font-size: 14px;
+    }
+    
+    /* 弹窗移动端优化 */
+    .dialog-box {
+        padding: 35px 25px;
+        max-width: 90%;
+        width: 320px;
+        margin: 20px;
+    }
+    
+    .dialog-avatar {
+        font-size: 70px;
+        margin-bottom: 25px;
+    }
+    
+    .dialog-content p {
+        font-size: 18px;
+        line-height: 1.8;
+    }
+    
+    .dialog-btn {
+        padding: 15px 50px;
+        font-size: 16px;
+    }
+    
+    .modal-box {
+        padding: 30px 20px;
+        max-width: 90%;
+        width: 320px;
+        margin: 20px;
+    }
+    
+    .modal-title {
+        font-size: 22px;
+        margin-bottom: 25px;
+    }
+    
+    .subject-grid {
+        gap: 15px;
+    }
+    
+    .subject-btn {
+        padding: 18px;
+        font-size: 16px;
+        border-radius: 12px;
+    }
+    
+    .poster-container {
+        padding: 15px;
+        width: 95%;
+        max-width: 350px;
+    }
+    
+    .poster-actions {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .poster-actions button {
+        width: 100%;
+        padding: 15px;
+    }
+    
+    /* 装饰圆圈移动端调整 */
+    .study-decoration {
+        width: 280px;
+        height: 280px;
     }
 }
 
