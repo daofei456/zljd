@@ -93,6 +93,36 @@ class StudyApp {
             });
         });
         
+        // 测试音效按钮（调试用）
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 't' || e.key === 'T') {
+                console.log('===== 音频测试开始 =====');
+                console.log('当前选择音效:', this.currentSound);
+                console.log('音频对象:', this.audio);
+                console.log('浏览器信息:', navigator.userAgent);
+                console.log('是否支持WakeLock:', 'wakeLock' in navigator);
+                
+                // 尝试播放测试音
+                const testAudio = new Audio();
+                testAudio.src = this.sounds['rain'];
+                console.log('测试音频URL:', testAudio.src);
+                
+                const testPlay = testAudio.play();
+                if (testPlay !== undefined) {
+                    testPlay.then(() => {
+                        console.log('测试音频播放成功！');
+                        setTimeout(() => {
+                            testAudio.pause();
+                            console.log('测试音频已停止');
+                        }, 2000);
+                    }).catch(err => {
+                        console.error('测试音频播放失败:', err);
+                    });
+                }
+                console.log('===== 音频测试结束 =====');
+            }
+        });
+        
         // 开始按钮
         document.getElementById('startBtn').addEventListener('click', () => {
             this.showSubjectModal();
@@ -114,6 +144,7 @@ class StudyApp {
                 document.querySelectorAll('.sound-btn').forEach(b => b.classList.remove('active'));
                 e.target.classList.add('active');
                 this.currentSound = e.target.dataset.sound;
+                console.log('用户选择音效:', this.currentSound);
                 this.updateSound();
             });
         });
@@ -257,10 +288,18 @@ class StudyApp {
     
     // 播放白噪音
     playSound() {
-        if (this.currentSound === 'none') return;
+        if (this.currentSound === 'none') {
+            console.log('当前选择静音，不播放音频');
+            return;
+        }
         
         const soundUrl = this.sounds[this.currentSound];
-        if (!soundUrl) return;
+        if (!soundUrl) {
+            console.log('未找到音频URL:', this.currentSound);
+            return;
+        }
+        
+        console.log('准备播放音频:', this.currentSound, 'URL:', soundUrl);
         
         // 创建音频对象
         this.audio = new Audio();
@@ -268,20 +307,57 @@ class StudyApp {
         this.audio.loop = true; // 循环播放
         this.audio.volume = 0.3; // 音量30%
         
-        // 播放音频（处理浏览器限制）
-        this.audio.play().catch(err => {
-            console.log('音频播放失败，可能是浏览器限制:', err);
-            // 某些浏览器需要用户交互后才能播放
+        // 监听音频事件
+        this.audio.addEventListener('canplaythrough', () => {
+            console.log('音频加载完成，可以播放');
         });
+        
+        this.audio.addEventListener('error', (e) => {
+            console.error('音频加载错误:', e);
+            console.error('错误代码:', this.audio.error.code);
+            console.error('错误信息:', this.audio.error.message);
+        });
+        
+        this.audio.addEventListener('play', () => {
+            console.log('音频开始播放');
+        });
+        
+        this.audio.addEventListener('pause', () => {
+            console.log('音频暂停');
+        });
+        
+        // 播放音频（处理浏览器限制）
+        const playPromise = this.audio.play();
+        
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                console.log('音频播放成功');
+            }).catch(err => {
+                console.error('音频播放失败:', err);
+                console.error('错误名称:', err.name);
+                console.error('错误信息:', err.message);
+                
+                // 显示用户提示
+                this.showAudioError();
+            });
+        }
     }
     
     // 停止白噪音
     stopSound() {
         if (this.audio) {
+            console.log('停止音频播放');
             this.audio.pause();
             this.audio.currentTime = 0;
             this.audio = null;
         }
+    }
+    
+    // 显示音频错误提示
+    showAudioError() {
+        console.log('显示音频错误提示');
+        // 可以在这里添加UI提示
+        alert('音频播放失败，请检查：\n1. 手机是否静音\n2. 浏览器是否允许自动播放\n3. 网络连接是否正常');
     }
     
     // 更新音效
