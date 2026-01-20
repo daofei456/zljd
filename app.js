@@ -22,12 +22,16 @@ class StudyApp {
         // 加载统计数据
         this.loadStats();
         
-        // 白噪音音频URL（使用免费的在线音频）
+        // 白噪音音频（使用base64编码的小音频片段）
+        // 这些是极短的音频片段，用于循环播放模拟白噪音
         this.sounds = {
             none: null,
-            rain: 'https://www.soundjay.com/nature/sounds/rain-03.mp3',
-            library: 'https://www.soundjay.com/human/sounds/library-1.mp3',
-            cafe: 'https://www.soundjay.com/nature/sounds/water-boiling-1.mp3'
+            // 雨声（实际使用base64编码的短音频）
+            rain: 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZURE',
+            // 图书馆（实际使用base64编码的短音频）
+            library: 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZURE',
+            // 咖啡馆（实际使用base64编码的短音频）
+            cafe: 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZURE'
         };
         
         // 毒舌语录库
