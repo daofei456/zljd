@@ -8,6 +8,7 @@ class StudyApp {
         this.isRunning = false;
         this.startTime = null;
         this.currentSubject = null;
+        this.wakeLock = null; // 屏幕常亮对象
         
         // 统计数据
         this.stats = {
@@ -138,6 +139,16 @@ class StudyApp {
         this.isRunning = true;
         this.startTime = Date.now();
         
+        // 隐藏地址栏（全屏效果）
+        if (window.scrollTo) {
+            setTimeout(() => {
+                window.scrollTo(0, 1);
+            }, 100);
+        }
+        
+        // 请求屏幕常亮（防止锁屏）
+        this.requestWakeLock();
+        
         // 显示开始语录
         this.showDialog('start');
         
@@ -162,6 +173,9 @@ class StudyApp {
         clearInterval(this.timer);
         this.isRunning = false;
         
+        // 释放屏幕常亮
+        this.releaseWakeLock();
+        
         // 计算实际学习时间（分钟）
         const actualMinutes = Math.round((Date.now() - this.startTime) / 1000 / 60);
         this.stats.todayTime += actualMinutes;
@@ -181,6 +195,9 @@ class StudyApp {
     completeStudy() {
         clearInterval(this.timer);
         this.isRunning = false;
+        
+        // 释放屏幕常亮
+        this.releaseWakeLock();
         
         // 更新统计数据
         this.stats.todayTime += this.selectedTime;
@@ -209,6 +226,34 @@ class StudyApp {
         this.updateDisplay();
     }
     
+    // 请求屏幕常亮（防止锁屏）
+    async requestWakeLock() {
+        if ('wakeLock' in navigator) {
+            try {
+                this.wakeLock = await navigator.wakeLock.request('screen');
+                console.log('屏幕常亮已开启');
+                
+                // 监听页面可见性变化，重新请求WakeLock
+                this.wakeLock.addEventListener('release', () => {
+                    console.log('屏幕常亮已释放');
+                });
+            } catch (err) {
+                console.error('无法开启屏幕常亮:', err);
+            }
+        } else {
+            console.log('浏览器不支持屏幕常亮功能');
+        }
+    }
+    
+    // 释放屏幕常亮
+    releaseWakeLock() {
+        if (this.wakeLock) {
+            this.wakeLock.release();
+            this.wakeLock = null;
+            console.log('屏幕常亮已关闭');
+        }
+    }
+    
     handleVisibilityChange() {
         if (!this.isRunning) return;
         
@@ -220,6 +265,11 @@ class StudyApp {
             const hiddenDuration = (Date.now() - this.hiddenTime) / 1000;
             if (hiddenDuration > 5) { // 离开超过5秒
                 this.stopStudy();
+            } else {
+                // 如果是短暂离开，重新请求屏幕常亮
+                if (this.wakeLock) {
+                    this.requestWakeLock();
+                }
             }
         }
     }
