@@ -9,6 +9,8 @@ class StudyApp {
         this.startTime = null;
         this.currentSubject = null;
         this.wakeLock = null; // 屏幕常亮对象
+        this.audio = null; // 白噪音音频对象
+        this.currentSound = 'none'; // 当前选择的音效
         
         // 统计数据
         this.stats = {
@@ -19,6 +21,14 @@ class StudyApp {
         
         // 加载统计数据
         this.loadStats();
+        
+        // 白噪音音频URL（使用免费的在线音频）
+        this.sounds = {
+            none: null,
+            rain: 'https://www.soundjay.com/nature/sounds/rain-03.mp3',
+            library: 'https://www.soundjay.com/human/sounds/library-1.mp3',
+            cafe: 'https://www.soundjay.com/nature/sounds/water-boiling-1.mp3'
+        };
         
         // 毒舌语录库
         this.quotes = {
@@ -98,6 +108,16 @@ class StudyApp {
             document.getElementById('devilDialog').classList.add('hidden');
         });
         
+        // 音效选择
+        document.querySelectorAll('.sound-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.sound-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                this.currentSound = e.target.dataset.sound;
+                this.updateSound();
+            });
+        });
+        
         // 科目选择
         document.querySelectorAll('.subject-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -149,6 +169,9 @@ class StudyApp {
         // 请求屏幕常亮（防止锁屏）
         this.requestWakeLock();
         
+        // 播放白噪音
+        this.playSound();
+        
         // 显示开始语录
         this.showDialog('start');
         
@@ -176,6 +199,9 @@ class StudyApp {
         // 释放屏幕常亮
         this.releaseWakeLock();
         
+        // 停止白噪音
+        this.stopSound();
+        
         // 计算实际学习时间（分钟）
         const actualMinutes = Math.round((Date.now() - this.startTime) / 1000 / 60);
         this.stats.todayTime += actualMinutes;
@@ -198,6 +224,9 @@ class StudyApp {
         
         // 释放屏幕常亮
         this.releaseWakeLock();
+        
+        // 停止白噪音
+        this.stopSound();
         
         // 更新统计数据
         this.stats.todayTime += this.selectedTime;
@@ -224,6 +253,44 @@ class StudyApp {
         document.getElementById('stopBtn').classList.add('hidden');
         this.remainingTime = this.selectedTime * 60;
         this.updateDisplay();
+    }
+    
+    // 播放白噪音
+    playSound() {
+        if (this.currentSound === 'none') return;
+        
+        const soundUrl = this.sounds[this.currentSound];
+        if (!soundUrl) return;
+        
+        // 创建音频对象
+        this.audio = new Audio();
+        this.audio.src = soundUrl;
+        this.audio.loop = true; // 循环播放
+        this.audio.volume = 0.3; // 音量30%
+        
+        // 播放音频（处理浏览器限制）
+        this.audio.play().catch(err => {
+            console.log('音频播放失败，可能是浏览器限制:', err);
+            // 某些浏览器需要用户交互后才能播放
+        });
+    }
+    
+    // 停止白噪音
+    stopSound() {
+        if (this.audio) {
+            this.audio.pause();
+            this.audio.currentTime = 0;
+            this.audio = null;
+        }
+    }
+    
+    // 更新音效
+    updateSound() {
+        // 如果正在学习，切换音效
+        if (this.isRunning && this.audio) {
+            this.stopSound();
+            this.playSound();
+        }
     }
     
     // 请求屏幕常亮（防止锁屏）
