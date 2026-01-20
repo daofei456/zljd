@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>强制执行官 - 逼你学习</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 主界面 -->
+    <div id="app">
+        <!-- 拟真自习室界面 -->
+        <div id="studyRoom" class="active">
+            <div class="room-background">
+                <div class="study-decoration"></div>
+            </div>
+            
+            <div class="timer-display">
+                <div class="timer-wrapper">
+                    <div id="countdown" class="countdown">25:00</div>
+                    <div class="timer-subtitle">专注时间</div>
+                </div>
+            </div>
+
+            <div class="time-selector">
+                <button class="time-btn active" data-time="25">25分钟</button>
+                <button class="time-btn" data-time="45">45分钟</button>
+                <button class="time-btn" data-time="60">60分钟</button>
+            </div>
+
+            <div class="action-buttons">
+                <button id="startBtn" class="btn-primary">入座学习</button>
+                <button id="stopBtn" class="btn-secondary hidden">结束学习</button>
+            </div>
+
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <span class="stat-value" id="todayTime">0</span>
+                    <span class="stat-label">今日时长</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="escapeCount">0</span>
+                    <span class="stat-label">逃跑次数</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="completeCount">0</span>
+                    <span class="stat-label">完成次数</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 毒舌弹窗 -->
+        <div id="devilDialog" class="dialog-overlay hidden">
+            <div class="dialog-box">
+                <div class="dialog-avatar">👿</div>
+                <div class="dialog-content">
+                    <p id="dialogText"></p>
+                </div>
+                <button id="dialogClose" class="dialog-btn">知道了</button>
+            </div>
+        </div>
+
+        <!-- 海报生成界面 -->
+        <div id="posterModal" class="modal-overlay hidden">
+            <div class="poster-container">
+                <canvas id="posterCanvas"></canvas>
+                <div class="poster-actions">
+                    <button id="downloadPoster" class="btn-primary">保存海报</button>
+                    <button id="closePoster" class="btn-secondary">关闭</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 科目选择弹窗 -->
+        <div id="subjectModal" class="modal-overlay hidden">
+            <div class="modal-box">
+                <h3 class="modal-title">选择学习科目</h3>
+                <div class="subject-grid">
+                    <button class="subject-btn" data-subject="数学">📐 数学</button>
+                    <button class="subject-btn" data-subject="英语">📚 英语</button>
+                    <button class="subject-btn" data-subject="政治">🏛️ 政治</button>
+                    <button class="subject-btn" data-subject="专业课">📖 专业课</button>
+                    <button class="subject-btn" data-subject="综合">🔍 综合</button>
+                    <button class="subject-btn" data-subject="其他">✏️ 其他</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
