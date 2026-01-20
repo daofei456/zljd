@@ -235,6 +235,30 @@ class StudyApp {
         const quotes = this.quotes[type];
         const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
         document.getElementById('dialogText').textContent = randomQuote;
+        
+        // 设置不同的图标和颜色
+        const avatar = document.getElementById('dialogAvatar');
+        const dialogBox = document.querySelector('.dialog-box');
+        
+        // 移除所有样式类
+        dialogBox.classList.remove('start', 'escape', 'complete');
+        
+        // 根据类型设置图标和样式
+        switch(type) {
+            case 'start':
+                avatar.textContent = '📚';
+                dialogBox.classList.add('start');
+                break;
+            case 'escape':
+                avatar.textContent = '👿';
+                dialogBox.classList.add('escape');
+                break;
+            case 'complete':
+                avatar.textContent = '🎉';
+                dialogBox.classList.add('complete');
+                break;
+        }
+        
         document.getElementById('devilDialog').classList.remove('hidden');
     }
     

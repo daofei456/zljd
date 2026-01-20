@@ -229,8 +229,19 @@ body {
     padding: 30px;
     max-width: 320px;
     text-align: center;
-    border: 2px solid rgba(255, 107, 107, 0.3);
     animation: slideIn 0.3s ease;
+}
+
+.dialog-box.start {
+    border: 2px solid rgba(100, 200, 255, 0.3);
+}
+
+.dialog-box.escape {
+    border: 2px solid rgba(255, 107, 107, 0.3);
+}
+
+.dialog-box.complete {
+    border: 2px solid rgba(255, 200, 100, 0.3);
 }
 
 @keyframes slideIn {
@@ -247,6 +258,18 @@ body {
 .dialog-avatar {
     font-size: 60px;
     margin-bottom: 20px;
+}
+
+.dialog-box.start .dialog-avatar {
+    color: #64c8ff;
+}
+
+.dialog-box.escape .dialog-avatar {
+    color: #ff6b6b;
+}
+
+.dialog-box.complete .dialog-avatar {
+    color: #ffc864;
 }
 
 .dialog-content {
