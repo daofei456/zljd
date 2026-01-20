@@ -338,7 +338,8 @@ body {
     #studyRoom {
         padding: 15px;
         justify-content: flex-start;
-        padding-top: 60px;
+        padding-top: 40px;
+        min-height: 100vh;
     }
     
     .countdown {

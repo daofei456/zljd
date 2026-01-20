@@ -120,6 +120,24 @@ class StudyApp {
             this.handleVisibilityChange();
         });
         
+        // 页面焦点变化（增强检测）
+        window.addEventListener('blur', () => {
+            if (this.isRunning) {
+                console.log('页面失去焦点');
+                this.hiddenTime = Date.now();
+            }
+        });
+        
+        window.addEventListener('focus', () => {
+            if (this.isRunning && this.hiddenTime) {
+                const hiddenDuration = (Date.now() - this.hiddenTime) / 1000;
+                console.log(`页面获得焦点，离开时长: ${hiddenDuration}秒`);
+                if (hiddenDuration > 3) {
+                    this.stopStudy();
+                }
+            }
+        });
+        
         // 页面即将卸载
         window.addEventListener('beforeunload', (e) => {
             if (this.isRunning) {
@@ -213,12 +231,14 @@ class StudyApp {
         if (!this.isRunning) return;
         
         if (document.hidden) {
-            // 页面隐藏，记录离开时间
+            // 页面隐藏，立即记录并暂停计时
             this.hiddenTime = Date.now();
+            console.log('页面隐藏，停止计时');
         } else {
             // 页面显示，检查是否长时间离开
             const hiddenDuration = (Date.now() - this.hiddenTime) / 1000;
-            if (hiddenDuration > 5) { // 离开超过5秒
+            console.log(`页面显示，离开时长: ${hiddenDuration}秒`);
+            if (hiddenDuration > 3) { // 离开超过3秒就停止
                 this.stopStudy();
             }
         }
