@@ -258,6 +258,365 @@ class StudyApp {
         
         // 每天首次打开App时显示打卡
         this.showDailyCheckin();
+        
+        // 初始化小组功能
+        this.initGroupFeature();
+    }
+    
+    // ==================== 小组功能 ====================
+    initGroupFeature() {
+        // 小组相关事件
+        document.getElementById('showGroups').addEventListener('click', () => {
+            this.showGroups();
+        });
+        
+        document.getElementById('closeGroups').addEventListener('click', () => {
+            document.getElementById('groupsModal').classList.add('hidden');
+        });
+        
+        document.getElementById('createGroup').addEventListener('click', () => {
+            this.showCreateGroup();
+        });
+        
+        document.getElementById('joinGroup').addEventListener('click', () => {
+            this.showJoinGroup();
+        });
+        
+        document.getElementById('closeGroupDetail').addEventListener('click', () => {
+            document.getElementById('groupDetailModal').classList.add('hidden');
+        });
+        
+        document.getElementById('shareGroup').addEventListener('click', () => {
+            this.shareGroup();
+        });
+        
+        document.getElementById('confirmCreateGroup').addEventListener('click', () => {
+            this.createGroup();
+        });
+        
+        document.getElementById('cancelCreateGroup').addEventListener('click', () => {
+            document.getElementById('createGroupModal').classList.add('hidden');
+        });
+        
+        document.getElementById('confirmJoinGroup').addEventListener('click', () => {
+            this.joinGroup();
+        });
+        
+        document.getElementById('cancelJoinGroup').addEventListener('click', () => {
+            document.getElementById('joinGroupModal').classList.add('hidden');
+        });
+    }
+    
+    // 显示小组主界面
+    async showGroups() {
+        document.getElementById('groupsModal').classList.remove('hidden');
+        await this.loadJoinedGroups();
+        await this.loadGroupRankings();
+    }
+    
+    // 加载已加入的小组
+    async loadJoinedGroups() {
+        // 临时使用模拟数据
+        const hasGroups = Math.random() > 0.5; // 随机显示有小组或没小组
+        
+        if (hasGroups) {
+            const mockGroups = [
+                {
+                    id: 'g_001',
+                    name: '考研必胜小队',
+                    description: '2024考研一起加油！',
+                    member_count: 5,
+                    max_members: 10,
+                    today_total_time: 620
+                }
+            ];
+            
+            const container = document.getElementById('joinedGroups');
+            container.innerHTML = mockGroups.map(group => `
+                <div class="group-item" onclick="app.showGroupDetail('${group.id}')">
+                    <div class="group-avatar">👥</div>
+                    <div class="group-info">
+                        <div class="group-name">${group.name}</div>
+                        <div class="group-meta">${group.member_count}/${group.max_members}人 · 今日总时长 ${group.today_total_time}分</div>
+                    </div>
+                    <div class="group-status active">正在学习</div>
+                </div>
+            `).join('');
+        } else {
+            // 显示空状态
+            document.getElementById('joinedGroups').innerHTML = `
+                <div class="empty-groups">
+                    <div class="empty-icon">👥</div>
+                    <div class="empty-text">你还没有加入任何小组</div>
+                    <div class="empty-hint">创建或加入小组，和小伙伴一起学习吧！</div>
+                </div>
+            `;
+        }
+    }
+    
+    // 显示创建小组弹窗
+    showCreateGroup() {
+        document.getElementById('createGroupModal').classList.remove('hidden');
+        document.getElementById('groupNameInput').value = '';
+        document.getElementById('groupDescInput').value = '';
+        document.getElementById('groupMaxMembers').value = '10';
+    }
+    
+    // 创建小组
+    async createGroup() {
+        const name = document.getElementById('groupNameInput').value.trim();
+        const description = document.getElementById('groupDescInput').value.trim();
+        const maxMembers = parseInt(document.getElementById('groupMaxMembers').value);
+        
+        if (!name) {
+            alert('请输入小组名称！');
+            return;
+        }
+        
+        if (name.length < 2 || name.length > 20) {
+            alert('小组名称长度需在2-20个字符之间！');
+            return;
+        }
+        
+        try {
+            // 生成邀请码
+            const joinCode = this.generateJoinCode();
+            
+            // 这里应该调用后端API创建小组
+            console.log('创建小组：', { name, description, maxMembers, joinCode });
+            
+            alert(`小组"${name}"创建成功！\n\n邀请码：${joinCode}\n\n快去邀请小伙伴加入吧！`);
+            
+            document.getElementById('createGroupModal').classList.add('hidden');
+            
+            // 刷新小组列表
+            await this.loadJoinedGroups();
+            
+        } catch (err) {
+            console.error('创建小组失败：', err);
+            alert('创建小组失败：' + err.message);
+        }
+    }
+    
+    // 生成邀请码
+    generateJoinCode() {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let code = '';
+        for (let i = 0; i < 6; i++) {
+            code += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return code;
+    }
+    
+    // 显示小组详情
+    async showGroupDetail(groupId) {
+        document.getElementById('groupsModal').classList.add('hidden');
+        document.getElementById('groupDetailModal').classList.remove('hidden');
+        
+        // 设置当前小组ID
+        this.currentGroup = { id: groupId, name: '考研必胜小队' };
+        
+        // 加载小组详情
+        await this.loadGroupDetail(groupId);
+        await this.loadMembers(groupId);
+        await this.loadActivities(groupId);
+    }
+    
+    // 加载小组详情
+    async loadGroupDetail(groupId) {
+        // 模拟数据
+        const group = {
+            name: '考研必胜小队',
+            member_count: 5,
+            max_members: 10,
+            today_total_time: 620
+        };
+        
+        document.getElementById('groupName').textContent = group.name;
+        document.querySelector('.group-stats').textContent = 
+            `${group.member_count}/${group.max_members}人 · 今日${group.today_total_time}分钟`;
+    }
+    
+    // 加载小组成员
+    async loadMembers(groupId) {
+        // 模拟数据
+        const mockMembers = [
+            {
+                user_id: 'u_001',
+                user_name: '张三',
+                role: 'owner',
+                current_status: 'studying',
+                current_subject: '数学',
+                study_start_time: new Date(Date.now() - 25 * 60 * 1000),
+                today_study_time: 240,
+                contribution_score: 150
+            },
+            {
+                user_id: 'u_002',
+                user_name: '李四',
+                role: 'member',
+                current_status: 'resting',
+                today_study_time: 180,
+                contribution_score: 120
+            },
+            {
+                user_id: 'u_003',
+                user_name: '王五',
+                role: 'member',
+                current_status: 'offline',
+                today_study_time: 90,
+                contribution_score: 80
+            }
+        ];
+        
+        const container = document.getElementById('membersList');
+        container.innerHTML = mockMembers.map(member => {
+            const studying = member.current_status === 'studying';
+            const elapsed = studying ? Math.floor((Date.now() - new Date(member.study_start_time)) / 60000) : 0;
+            
+            return `
+                <div class="member-item ${member.current_status}" onclick="app.showMemberMenu('${member.user_id}')">
+                    <div class="member-avatar">${member.user_name.charAt(0)}</div>
+                    <div class="member-details">
+                        <div class="member-name">${member.user_name}${member.role === 'owner' ? '（组长）' : ''}</div>
+                        <div class="member-status">
+                            ${studying ? `正在学习 · ${member.current_subject} · 已学${elapsed}分钟` : 
+                              member.current_status === 'resting' ? '休息中' : '离线'}
+                        </div>
+                    </div>
+                    <div class="member-score">${member.contribution_score}分</div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    // 显示成员菜单（点击成员）
+    showMemberMenu(memberId) {
+        const actions = ['👍 点赞', '💪 加油', '📢 提醒'];
+        const choice = confirm('选择操作：\n\n1. 👍 点赞\n2. 💪 加油\n3. 📢 提醒\n\n点击确定执行操作，取消关闭菜单');
+        
+        if (choice) {
+            alert('已发送鼓励！');
+            // 这里应该发送鼓励给成员
+        }
+    }
+    
+    // 加载小组动态
+    async loadActivities(groupId) {
+        // 模拟数据
+        const mockActivities = [
+            {
+                user_name: '李四',
+                activity_type: 'complete',
+                activity_content: '完成了45分钟英语学习',
+                created_at: new Date(Date.now() - 10 * 60000)
+            },
+            {
+                user_name: '王五',
+                activity_type: 'escape',
+                activity_content: '逃跑了，连25分钟都坚持不了？',
+                created_at: new Date(Date.now() - 30 * 60000)
+            },
+            {
+                user_name: '张三',
+                activity_type: 'join',
+                activity_content: '加入了小组',
+                created_at: new Date(Date.now() - 60 * 60000)
+            }
+        ];
+        
+        const container = document.getElementById('groupActivities');
+        container.innerHTML = mockActivities.map(activity => {
+            const minutesAgo = Math.floor((Date.now() - new Date(activity.created_at)) / 60000);
+            return `
+                <div class="activity-item">
+                    <span class="activity-time">${minutesAgo}分钟前</span>
+                    <span class="activity-content">${activity.activity_content}</span>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    // 分享小组
+    shareGroup() {
+        if (!this.currentGroup) return;
+        
+        const joinCode = 'A1B2C3'; // 应该从后端获取
+        const shareText = `我在"强制执行官"App的"${this.currentGroup.name}"小组学习，邀请码：${joinCode}，快来一起学习吧！`;
+        
+        if (navigator.share) {
+            navigator.share({
+                title: `加入${this.currentGroup.name}`,
+                text: shareText,
+                url: window.location.href
+            }).catch(err => {
+                console.log('分享失败：', err);
+            });
+        } else {
+            // 复制到剪贴板
+            navigator.clipboard.writeText(shareText).then(() => {
+                alert('邀请信息已复制到剪贴板！\n\n快去分享给小伙伴吧！');
+            }).catch(() => {
+                alert(`邀请信息：${shareText}\n\n请手动复制分享`);
+            });
+        }
+    }
+    
+    // 加载小组排行榜
+    async loadGroupRankings() {
+        // 模拟排行榜数据
+        const mockRankings = [
+            { rank: 1, user_name: '张三', study_time: 240, complete_count: 3 },
+            { rank: 2, user_name: '李四', study_time: 180, complete_count: 2 },
+            { rank: 3, user_name: '王五', study_time: 120, complete_count: 1 }
+        ];
+        
+        const container = document.getElementById('groupRankingList');
+        container.innerHTML = mockRankings.map(item => `
+            <div class="ranking-item rank-${item.rank}">
+                <div class="rank-number">${item.rank}</div>
+                <div class="user-info">
+                    <div class="user-avatar">${item.user_name.charAt(0)}</div>
+                    <div class="user-name">${item.user_name}</div>
+                </div>
+                <div class="study-time">${item.study_time}分钟</div>
+            </div>
+        `).join('');
+        
+        // 显示排行榜区域
+        document.querySelector('.group-ranking').style.display = 'block';
+    }
+    
+    // 显示加入小组弹窗
+    showJoinGroup() {
+        document.getElementById('joinGroupModal').classList.remove('hidden');
+        document.getElementById('joinCodeInput').value = '';
+        document.getElementById('joinCodeInput').focus();
+    }
+    
+    // 加入小组
+    async joinGroup() {
+        const joinCode = document.getElementById('joinCodeInput').value.trim().toUpperCase();
+        
+        if (!joinCode || joinCode.length !== 6) {
+            alert('请输入6位邀请码！');
+            return;
+        }
+        
+        try {
+            console.log('加入小组，邀请码：', joinCode);
+            
+            alert(`加入成功！\n\n欢迎加入学习小组！`);
+            
+            document.getElementById('joinGroupModal').classList.add('hidden');
+            
+            // 刷新小组列表
+            await this.loadJoinedGroups();
+            
+        } catch (err) {
+            console.error('加入小组失败：', err);
+            alert('加入失败：' + (err.message || '邀请码错误或小组已满'));
+        }
     }
     
     // 日历相关方法
