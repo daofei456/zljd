@@ -246,6 +246,18 @@ class StudyApp {
         document.getElementById('nextMonth').addEventListener('click', () => {
             this.changeMonth(1);
         });
+        
+        // 每日打卡相关事件
+        document.getElementById('generateDailyPoster').addEventListener('click', () => {
+            this.generateDailyPoster();
+        });
+        
+        document.getElementById('closeDailyCheckin').addEventListener('click', () => {
+            document.getElementById('dailyCheckinModal').classList.add('hidden');
+        });
+        
+        // 每天首次打开App时显示打卡
+        this.showDailyCheckin();
     }
     
     // 日历相关方法
@@ -394,6 +406,171 @@ class StudyApp {
         }
         
         localStorage.setItem('studyCalendar', JSON.stringify(allData));
+    }
+    
+    // 每日打卡相关方法
+    showDailyCheckin() {
+        const today = new Date();
+        const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        const lastCheckin = localStorage.getItem('lastCheckinDate');
+        
+        // 如果是新的一天，显示打卡
+        if (lastCheckin !== dateStr) {
+            this.generateDailyQuote();
+            localStorage.setItem('lastCheckinDate', dateStr);
+        }
+    }
+    
+    generateDailyQuote() {
+        const today = new Date();
+        const dateText = `${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日`;
+        
+        // 每日毒舌语录库（扩展版）
+        const dailyQuotes = [
+            "新的一天，新的理由放弃？不，新的机会坚持！",
+            "昨天的你努力了，今天的你要更努力！",
+            "每个清晨都是逆袭的开始，别辜负了晨光。",
+            "睁开眼睛第一件事：想想你的竞争对手已经起床了。",
+            "早安，未来的研究生/公务员！",
+            "今日毒鸡汤：你不努力，谁也给不了你想要的生活。",
+            "早上好，今天也是离梦想更近的一天（如果你不偷懒的话）。",
+            "新的一天，别让昨天的遗憾延续到今天。",
+            "早安！记住，你的目标正在向你招手（前提是你得动起来）。",
+            "每个清晨都是改写命运的机会，别睡到命运改写了你。",
+            "新的一天，新的战斗开始了！你的对手已经就位。",
+            "早安，今天的你也要为梦想而战（而不是为懒觉而战）。",
+            "睁开眼睛，想想你想去的学校，然后滚去刷题。",
+            "早上好，今天的你比昨天更接近目标（理论上）。",
+            "新的一天，别让未来的你恨现在的你。",
+            "早安！今天的汗水是明天的骄傲（今天的懒觉是明天的后悔）。",
+            "每个清晨都是上天给的礼物，别浪费了。",
+            "早上好，今天的你要比昨天更优秀一点。",
+            "新的一天，新的希望（前提是你别放弃）。",
+            "早安，记住你的梦想，然后为之奋斗一整天。",
+            "睁开眼睛，想想你为什么开始，然后继续前行。",
+            "早上好，今天的你离上岸又近了一天（如果你不后退的话）。",
+            "新的一天，别给自己找借口，给梦想一个机会。",
+            "早安！今天的努力决定你明天的位置。",
+            "每个清晨都是重生的机会，别重复昨天的懒惰。",
+            "早上好，今天的你要为昨天的承诺负责。",
+            "新的一天，新的征程，别在起点就躺下。",
+            "早安，今天的你要用行动证明你的决心。",
+            "睁开眼睛，看看你的目标，然后全力以赴。",
+            "早上好，今天的你是未来的你在向现在的你求救。",
+            "新的一天，别让今天的你成为明天的遗憾。",
+            "早安！今天的你要让昨天的自己刮目相看。",
+            "每个清晨都是改变命运的机会，别睡到命运改变了你。",
+            "早上好，今天的你要为梦想而战，为未来而战。",
+            "新的一天，新的自己（前提是你愿意改变）。",
+            "早安，记住你的初心，然后坚持到底。",
+            "睁开眼睛，想想你想过的生活，然后为之努力。",
+            "早上好，今天的你比昨天更有经验（如果不犯同样的错误）。",
+            "新的一天，别让恐惧支配你，让梦想指引你。",
+            "早安！今天的你要比昨天更接近目标。",
+            "每个清晨都是上天给你的机会，别辜负了。",
+            "早上好，今天的你要用行动书写你的故事。",
+            "新的一天，新的篇章，别写满了后悔。",
+            "早安，今天的你要让努力成为一种习惯。",
+            "睁开眼睛，看看你的梦想，然后为之奋斗。",
+            "早上好，今天的你是未来的你在向现在的你呐喊。"
+        ];
+        
+        // 根据日期生成固定随机索引（保证同一天显示同一条）
+        const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+        const randomIndex = this.seededRandom(seed, dailyQuotes.length);
+        const quote = dailyQuotes[randomIndex];
+        
+        // 计算连续打卡天数
+        const streak = this.calculateStreak();
+        
+        // 显示打卡界面
+        document.getElementById('checkinDate').textContent = dateText;
+        document.getElementById('checkinStreak').textContent = `连续打卡 ${streak} 天 🔥`;
+        document.getElementById('dailyQuote').textContent = quote;
+        
+        document.getElementById('dailyCheckinModal').classList.remove('hidden');
+        
+        // 保存今日语录用于生成海报
+        this.todayQuote = quote;
+    }
+    
+    // 根据种子生成固定随机数
+    seededRandom(seed, max) {
+        const x = Math.sin(seed) * 10000;
+        return Math.floor((x - Math.floor(x)) * max);
+    }
+    
+    // 计算连续打卡天数
+    calculateStreak() {
+        const calendarData = JSON.parse(localStorage.getItem('studyCalendar') || '{}');
+        const today = new Date();
+        let streak = 0;
+        
+        // 从今天往前检查，直到遇到空天数
+        for (let i = 0; i < 365; i++) {
+            const checkDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i);
+            const dateStr = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}-${String(checkDate.getDate()).padStart(2, '0')}`;
+            
+            if (calendarData[dateStr] && calendarData[dateStr].totalTime > 0) {
+                streak++;
+            } else {
+                break;
+            }
+        }
+        
+        return streak;
+    }
+    
+    // 生成每日打卡海报
+    generateDailyPoster() {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const today = new Date();
+        
+        // 设置画布尺寸（竖版）
+        canvas.width = 750;
+        canvas.height = 1334;
+        
+        // 背景渐变
+        const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        gradient.addColorStop(0, '#1a1a2e');
+        gradient.addColorStop(1, '#16213e');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // 标题
+        ctx.fillStyle = '#ffc864';
+        ctx.font = 'bold 48px -apple-system, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('今日学习打卡', 375, 150);
+        
+        // 日期
+        const dateStr = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, '0')}.${String(today.getDate()).padStart(2, '0')}`;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.font = '28px -apple-system, sans-serif';
+        ctx.fillText(dateStr, 375, 200);
+        
+        // 连续天数
+        const streak = this.calculateStreak();
+        ctx.fillStyle = '#ff6b6b';
+        ctx.font = 'bold 36px -apple-system, sans-serif';
+        ctx.fillText(`连续打卡 ${streak} 天 🔥`, 375, 280);
+        
+        // 今日语录（自动换行）
+        ctx.fillStyle = '#fff';
+        ctx.font = '32px -apple-system, sans-serif';
+        this.wrapText(ctx, this.todayQuote, 375, 400, 650, 48);
+        
+        // 底部标语
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.font = '24px -apple-system, sans-serif';
+        ctx.fillText('坚持学习，早日上岸 🎯', 375, 1200);
+        
+        // 下载海报
+        const link = document.createElement('a');
+        link.download = `打卡_${dateStr}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
     }
     
     // 显示某天详情

@@ -748,6 +748,50 @@ body {
     border-radius: 2px;
 }
 
+/* 每日打卡 */
+.checkin-container {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border-radius: 20px;
+    padding: 40px 30px;
+    max-width: 350px;
+    width: 90%;
+    text-align: center;
+    border: 2px solid rgba(255, 200, 100, 0.3);
+}
+
+.checkin-header {
+    margin-bottom: 30px;
+}
+
+.checkin-date {
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 10px;
+}
+
+.checkin-streak {
+    font-size: 24px;
+    color: #ffc864;
+    font-weight: bold;
+}
+
+.checkin-quote {
+    font-size: 20px;
+    line-height: 1.6;
+    color: #fff;
+    margin: 30px 0;
+    padding: 20px;
+    background: rgba(255, 107, 107, 0.1);
+    border-radius: 15px;
+    border-left: 4px solid #ff6b6b;
+}
+
+.checkin-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
 /* 响应式设计 - 移动端优化 */
 @media (max-width: 480px) {
     * {

@@ -124,6 +124,21 @@
             </div>
         </div>
 
+        <!-- 每日打卡弹窗 -->
+        <div id="dailyCheckinModal" class="modal-overlay hidden">
+            <div class="checkin-container">
+                <div class="checkin-header">
+                    <div class="checkin-date" id="checkinDate"></div>
+                    <div class="checkin-streak" id="checkinStreak"></div>
+                </div>
+                <div class="checkin-quote" id="dailyQuote"></div>
+                <div class="checkin-actions">
+                    <button id="generateDailyPoster" class="btn-primary">生成打卡海报</button>
+                    <button id="closeDailyCheckin" class="btn-secondary">关闭</button>
+                </div>
+            </div>
+        </div>
+
         <!-- 海报生成界面 -->
         <div id="posterModal" class="modal-overlay hidden">
             <div class="poster-container">
