@@ -423,6 +423,18 @@ body {
     max-width: 400px;
     width: 90%;
     border: 2px solid rgba(255, 107, 107, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* 日历关闭按钮样式 */
+.calendar-container .btn-secondary {
+    margin-top: 20px;
+    padding: 10px 30px;
+    font-size: 14px;
+    min-width: 120px;
+    width: auto;
 }
 
 .calendar-header {
@@ -616,6 +628,18 @@ body {
     max-width: 400px;
     width: 90%;
     border: 2px solid rgba(255, 107, 107, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* 日历关闭按钮样式 */
+.calendar-container .btn-secondary {
+    margin-top: 20px;
+    padding: 10px 30px;
+    font-size: 14px;
+    min-width: 120px;
+    width: auto;
 }
 
 .calendar-header {
