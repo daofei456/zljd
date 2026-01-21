@@ -48,6 +48,11 @@
                 </div>
             </div>
 
+            <!-- 日历切换按钮 -->
+            <div class="calendar-toggle">
+                <button id="showCalendar" class="btn-secondary">📅 查看学习日历</button>
+            </div>
+
             <div class="stats-bar">
                 <div class="stat-item">
                     <span class="stat-value" id="todayTime">0</span>
@@ -72,6 +77,50 @@
                     <p id="dialogText"></p>
                 </div>
                 <button id="dialogClose" class="dialog-btn">知道了</button>
+            </div>
+        </div>
+
+        <!-- 日历界面 -->
+        <div id="calendarModal" class="modal-overlay hidden">
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <button id="prevMonth" class="calendar-nav">‹</button>
+                    <div id="currentMonth" class="current-month"></div>
+                    <button id="nextMonth" class="calendar-nav">›</button>
+                </div>
+                <div class="calendar-grid">
+                    <div class="calendar-weekday">日</div>
+                    <div class="calendar-weekday">一</div>
+                    <div class="calendar-weekday">二</div>
+                    <div class="calendar-weekday">三</div>
+                    <div class="calendar-weekday">四</div>
+                    <div class="calendar-weekday">五</div>
+                    <div class="calendar-weekday">六</div>
+                </div>
+                <div id="calendarDays" class="calendar-days"></div>
+                <div class="calendar-legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #333;"></div>
+                        <span>未学习</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #4a90e2;"></div>
+                        <span>&lt;30分</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #7b68ee;"></div>
+                        <span>30-60分</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #ff6b6b;"></div>
+                        <span>60-90分</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #ffc864;"></div>
+                        <span>≥90分</span>
+                    </div>
+                </div>
+                <button id="closeCalendar" class="btn-secondary">关闭</button>
             </div>
         </div>
 
