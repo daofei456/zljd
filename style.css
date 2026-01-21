@@ -33,9 +33,9 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
-    padding: 20px;
-    padding-top: 40px;
-    padding-bottom: 20px;
+    padding: 15px;
+    padding-top: 30px;
+    padding-bottom: 15px;
     overflow-x: hidden;
 }
 
@@ -56,8 +56,8 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 300px;
-    height: 300px;
+    width: 250px;
+    height: 250px;
     border: 2px solid rgba(255, 255, 255, 0.1);
     border-radius: 50%;
     animation: pulse 3s ease-in-out infinite;
@@ -77,7 +77,7 @@ body {
 .timer-display {
     position: relative;
     z-index: 1;
-    margin-bottom: 40px;
+    margin-bottom: 15px;
 }
 
 .timer-wrapper {
@@ -90,8 +90,8 @@ body {
 /* 时间进度环 */
 .timer-ring {
     position: relative;
-    width: 300px;
-    height: 300px;
+    width: 260px;
+    height: 260px;
 }
 
 .progress-ring {
@@ -103,13 +103,13 @@ body {
 .progress-ring-bg {
     fill: none;
     stroke: rgba(255, 255, 255, 0.1);
-    stroke-width: 8;
+    stroke-width: 6;
 }
 
 .progress-ring-circle {
     fill: none;
     stroke: url(#timerGradient);
-    stroke-width: 8;
+    stroke-width: 6;
     stroke-linecap: round;
     stroke-dasharray: 565.48;
     stroke-dashoffset: 0;
@@ -140,11 +140,11 @@ body {
 }
 
 .countdown {
-    font-size: 72px;
+    font-size: 60px;
     font-weight: bold;
     color: #fff;
     text-shadow: 0 0 30px rgba(255, 255, 255, 0.5), 0 0 60px rgba(255, 200, 100, 0.3);
-    letter-spacing: 3px;
+    letter-spacing: 2px;
     animation: text-glow 2s ease-in-out infinite;
 }
 
@@ -159,9 +159,9 @@ body {
 }
 
 .timer-subtitle {
-    font-size: 16px;
+    font-size: 13px;
     color: rgba(255, 255, 255, 0.7);
-    margin-top: 10px;
+    margin-top: 6px;
     animation: subtitle-fade 3s ease-in-out infinite;
 }
 
@@ -332,11 +332,11 @@ body {
     z-index: 1;
     display: flex;
     gap: 10px;
-    margin-bottom: 40px;
+    margin-bottom: 20px;
 }
 
 .time-btn {
-    padding: 12px 24px;
+    padding: 10px 20px;
     border: 2px solid rgba(255, 255, 255, 0.3);
     background: rgba(255, 255, 255, 0.1);
     color: #fff;
@@ -362,15 +362,15 @@ body {
     z-index: 1;
     display: flex;
     gap: 15px;
-    margin-bottom: 60px;
+    margin-bottom: 25px;
 }
 
 .btn-primary,
 .btn-secondary {
-    padding: 15px 40px;
+    padding: 12px 35px;
     border: none;
     border-radius: 50px;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -404,18 +404,18 @@ body {
 
 .stats-bar {
     display: flex;
-    gap: 25px;
+    gap: 20px;
     z-index: 1;
     background: rgba(255, 255, 255, 0.1);
-    padding: 14px 20px;
-    border-radius: 15px;
+    padding: 12px 20px;
+    border-radius: 12px;
     backdrop-filter: blur(10px);
     width: 95%;
     max-width: 380px;
     justify-content: center;
     align-items: center;
     margin-top: auto;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 .stat-item {
@@ -424,15 +424,15 @@ body {
 
 .stat-value {
     display: block;
-    font-size: 24px;
+    font-size: 20px;
     font-weight: bold;
     color: #ffc864;
 }
 
 .stat-label {
-    font-size: 12px;
+    font-size: 11px;
     color: rgba(255, 255, 255, 0.7);
-    margin-top: 5px;
+    margin-top: 3px;
 }
 
 /* 弹窗样式 */
@@ -594,7 +594,7 @@ body {
 .calendar-toggle {
     position: relative;
     z-index: 1;
-    margin: 20px 0 30px 0;
+    margin: 10px 0 15px 0;
     display: flex;
     gap: 15px;
     justify-content: center;
@@ -870,32 +870,32 @@ body {
 .sound-selector {
     position: relative;
     z-index: 1;
-    margin: 30px 0;
+    margin: 15px 0;
     text-align: center;
     width: 100%;
     max-width: 400px;
 }
 
 .sound-title {
-    font-size: 16px;
+    font-size: 14px;
     color: rgba(255, 255, 255, 0.7);
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
 .sound-options {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     justify-content: center;
     flex-wrap: wrap;
 }
 
 .sound-btn {
-    padding: 10px 16px;
+    padding: 8px 14px;
     border: 2px solid rgba(255, 255, 255, 0.2);
     background: rgba(255, 255, 255, 0.05);
     color: rgba(255, 255, 255, 0.8);
-    border-radius: 25px;
-    font-size: 13px;
+    border-radius: 20px;
+    font-size: 12px;
     cursor: pointer;
     transition: all 0.3s ease;
     white-space: nowrap;
@@ -1056,7 +1056,7 @@ body {
 .calendar-toggle {
     position: relative;
     z-index: 1;
-    margin: 20px 0 30px 0;
+    margin: 10px 0 15px 0;
     display: flex;
     gap: 15px;
     justify-content: center;
@@ -1332,32 +1332,32 @@ body {
 .sound-selector {
     position: relative;
     z-index: 1;
-    margin: 30px 0;
+    margin: 15px 0;
     text-align: center;
     width: 100%;
     max-width: 400px;
 }
 
 .sound-title {
-    font-size: 16px;
+    font-size: 14px;
     color: rgba(255, 255, 255, 0.7);
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
 .sound-options {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     justify-content: center;
     flex-wrap: wrap;
 }
 
 .sound-btn {
-    padding: 10px 16px;
+    padding: 8px 14px;
     border: 2px solid rgba(255, 255, 255, 0.2);
     background: rgba(255, 255, 255, 0.05);
     color: rgba(255, 255, 255, 0.8);
-    border-radius: 25px;
-    font-size: 13px;
+    border-radius: 20px;
+    font-size: 12px;
     cursor: pointer;
     transition: all 0.3s ease;
     white-space: nowrap;
@@ -1563,181 +1563,188 @@ body {
     * {
         box-sizing: border-box;
     }
-    
+
     html, body {
         width: 100%;
         max-width: 100%;
         overflow-x: hidden;
+        overflow-y: hidden;
     }
-    
+
     body {
-        font-size: 16px;
+        font-size: 14px;
     }
-    
+
     #studyRoom {
-        padding: 15px;
-        padding-top: 40px;
+        padding: 10px;
+        padding-top: 25px;
         padding-bottom: 10px;
         min-height: 100vh;
         width: 100%;
         max-width: 100vw;
+        height: 100vh;
+        justify-content: flex-start;
     }
-    
+
     .countdown {
-        font-size: 80px;
-        letter-spacing: 3px;
-        margin-top: 30px;
+        font-size: 52px;
+        letter-spacing: 2px;
+        margin-top: 20px;
     }
 
     .timer-ring {
-        width: 260px;
-        height: 260px;
+        width: 220px;
+        height: 220px;
     }
-    
+
     .timer-subtitle {
-        font-size: 18px;
-        margin-top: 15px;
+        font-size: 12px;
+        margin-top: 6px;
     }
-    
+
     .timer-display {
-        margin-bottom: 30px;
+        margin-bottom: 12px;
     }
-    
+
     .time-selector {
-        gap: 10px;
-        margin-bottom: 30px;
+        gap: 8px;
+        margin-bottom: 15px;
         width: 100%;
-        max-width: 300px;
+        max-width: 280px;
         padding: 0 5px;
     }
-    
+
     .time-btn {
-        padding: 14px 15px;
-        font-size: 16px;
+        padding: 8px 14px;
+        font-size: 13px;
         flex: 1;
-        min-width: 75px;
-        border-radius: 10px;
+        min-width: 65px;
+        border-radius: 8px;
         white-space: nowrap;
         text-align: center;
     }
-    
+
     .action-buttons {
-        gap: 15px;
-        margin-bottom: 80px;
+        gap: 12px;
+        margin-bottom: 15px;
         width: 100%;
-        max-width: 320px;
+        max-width: 280px;
         justify-content: center;
     }
-    
+
     .btn-primary,
     .btn-secondary {
-        padding: 18px 45px;
-        font-size: 18px;
+        padding: 10px 30px;
+        font-size: 14px;
         border-radius: 50px;
-        min-width: 180px;
+        min-width: 140px;
     }
-    
+
+    .sound-selector {
+        margin: 10px 0;
+    }
+
+    .sound-title {
+        font-size: 12px;
+        margin-bottom: 8px;
+    }
+
+    .sound-options {
+        gap: 5px;
+    }
+
+    .sound-btn {
+        padding: 6px 12px;
+        font-size: 11px;
+    }
+
+    .calendar-toggle {
+        margin: 8px 0 10px 0;
+    }
+
     .stats-bar {
-        gap: 20px;
-        padding: 16px 20px;
+        gap: 15px;
+        padding: 10px 15px;
         width: 95%;
-        max-width: 360px;
-        border-radius: 18px;
-        margin-bottom: 15px;
+        max-width: 300px;
+        border-radius: 10px;
+        margin-bottom: 5px;
+        margin-top: auto;
     }
     
     .stat-value {
-        font-size: 28px;
+        font-size: 18px;
     }
-    
+
     .stat-label {
-        font-size: 14px;
+        font-size: 10px;
     }
-    
-    /* 白噪音移动端优化 */
-    .sound-selector {
-        margin: 20px 0;
-    }
-    
-    .sound-title {
-        font-size: 14px;
-        margin-bottom: 12px;
-    }
-    
-    .sound-options {
-        gap: 6px;
-    }
-    
-    .sound-btn {
-        padding: 8px 12px;
-        font-size: 12px;
-    }
-    
+
     /* 弹窗移动端优化 */
     .dialog-box {
-        padding: 35px 25px;
+        padding: 25px 20px;
         max-width: 90%;
-        width: 320px;
+        width: 300px;
         margin: 20px;
     }
-    
+
     .dialog-avatar {
-        font-size: 70px;
-        margin-bottom: 25px;
+        font-size: 50px;
+        margin-bottom: 15px;
     }
-    
+
     .dialog-content p {
-        font-size: 18px;
-        line-height: 1.8;
+        font-size: 14px;
+        line-height: 1.6;
     }
-    
+
     .dialog-btn {
-        padding: 15px 50px;
-        font-size: 16px;
+        padding: 12px 40px;
+        font-size: 14px;
     }
-    
+
     .modal-box {
-        padding: 30px 20px;
+        padding: 25px 18px;
         max-width: 90%;
-        width: 320px;
+        width: 300px;
         margin: 20px;
     }
-    
+
     .modal-title {
-        font-size: 22px;
-        margin-bottom: 25px;
+        font-size: 18px;
+        margin-bottom: 20px;
     }
-    
+
     .subject-grid {
-        gap: 15px;
+        gap: 10px;
     }
-    
+
     .subject-btn {
-        padding: 18px;
-        font-size: 16px;
-        border-radius: 12px;
+        padding: 12px;
+        font-size: 14px;
+        border-radius: 10px;
     }
-    
+
     .poster-container {
-        padding: 15px;
+        padding: 12px;
         width: 95%;
-        max-width: 350px;
+        max-width: 300px;
     }
-    
+
     .poster-actions {
         flex-direction: column;
-        gap: 12px;
+        gap: 10px;
     }
-    
+
     .poster-actions button {
         width: 100%;
-        padding: 15px;
+        padding: 12px;
     }
-    
+
     /* 装饰圆圈移动端调整 */
     .study-decoration {
-        width: 280px;
-        height: 280px;
+        width: 200px;
+        height: 200px;
     }
 }
 
