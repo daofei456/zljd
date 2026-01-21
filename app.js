@@ -37,9 +37,18 @@ class StudyApp {
         this.noiseSource = null;
         this.noiseType = null;
         
+        // CloudBase配置
+        this.cloudbase = null;
+        this.db = null;
+        this.useCloudBase = false; // 是否启用CloudBase
+        this.userId = null; // 用户ID
+
         // 初始化音频
         this.initAudio();
-        
+
+        // 初始化CloudBase
+        this.initCloudBase();
+
         // 毒舌语录库
         this.quotes = {
             start: [
@@ -120,6 +129,86 @@ class StudyApp {
             alert('音频初始化失败: ' + err.message);
             this.audioEnabled = false;
         }
+    }
+    
+    // 初始化CloudBase
+    initCloudBase() {
+        // 检查是否配置了CloudBase环境ID
+        const envId = 'your-env-id'; // TODO: 替换为你的CloudBase环境ID
+        
+        if (envId === 'your-env-id') {
+            console.log('CloudBase未配置，使用本地存储模式');
+            this.useCloudBase = false;
+            
+            // 生成本地用户ID
+            let localUserId = localStorage.getItem('localUserId');
+            if (!localUserId) {
+                localUserId = 'u_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('localUserId', localUserId);
+            }
+            this.userId = localUserId;
+            console.log('本地用户ID:', this.userId);
+            return;
+        }
+        
+        try {
+            this.cloudbase = new wx.cloud.Cloud({
+                env: envId,
+                traceUser: true
+            });
+            
+            this.cloudbase.init();
+            this.db = this.cloudbase.database();
+            
+            this.useCloudBase = true;
+            console.log('CloudBase初始化成功');
+            
+            // 尝试匿名登录获取用户ID
+            this.getUserId();
+        } catch (err) {
+            console.error('CloudBase初始化失败:', err);
+            this.useCloudBase = false;
+            alert('CloudBase初始化失败，将使用本地存储模式');
+        }
+    }
+    
+    // 获取用户ID
+    async getUserId() {
+        if (!this.useCloudBase) {
+            return this.userId;
+        }
+        
+        try {
+            // 尝试匿名登录
+            const { result } = await this.cloudbase.callFunction({
+                name: 'login' // 需要创建login云函数
+            });
+            
+            if (result && result.userId) {
+                this.userId = result.userId;
+                localStorage.setItem('cloudUserId', this.userId);
+                console.log('CloudBase用户ID:', this.userId);
+            } else {
+                // 如果没有login云函数，使用本地ID
+                let localUserId = localStorage.getItem('cloudUserId');
+                if (!localUserId) {
+                    localUserId = 'u_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                    localStorage.setItem('cloudUserId', localUserId);
+                }
+                this.userId = localUserId;
+            }
+        } catch (err) {
+            console.error('获取用户ID失败:', err);
+            // 使用本地ID
+            let localUserId = localStorage.getItem('cloudUserId');
+            if (!localUserId) {
+                localUserId = 'u_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('cloudUserId', localUserId);
+            }
+            this.userId = localUserId;
+        }
+        
+        return this.userId;
     }
     
     init() {
@@ -258,56 +347,9 @@ class StudyApp {
         
         // 每天首次打开App时显示打卡
         this.showDailyCheckin();
-        
-        // 初始化小组功能
-        this.initGroupFeature();
     }
     
-    // ==================== 小组功能 ====================
-    initGroupFeature() {
-        // 小组相关事件
-        document.getElementById('showGroups').addEventListener('click', () => {
-            this.showGroups();
-        });
-        
-        document.getElementById('closeGroups').addEventListener('click', () => {
-            document.getElementById('groupsModal').classList.add('hidden');
-        });
-        
-        document.getElementById('createGroup').addEventListener('click', () => {
-            this.showCreateGroup();
-        });
-        
-        document.getElementById('joinGroup').addEventListener('click', () => {
-            this.showJoinGroup();
-        });
-        
-        document.getElementById('closeGroupDetail').addEventListener('click', () => {
-            document.getElementById('groupDetailModal').classList.add('hidden');
-        });
-        
-        document.getElementById('shareGroup').addEventListener('click', () => {
-            this.shareGroup();
-        });
-        
-        document.getElementById('confirmCreateGroup').addEventListener('click', () => {
-            this.createGroup();
-        });
-        
-        document.getElementById('cancelCreateGroup').addEventListener('click', () => {
-            document.getElementById('createGroupModal').classList.add('hidden');
-        });
-        
-        document.getElementById('confirmJoinGroup').addEventListener('click', () => {
-            this.joinGroup();
-        });
-        
-        document.getElementById('cancelJoinGroup').addEventListener('click', () => {
-            document.getElementById('joinGroupModal').classList.add('hidden');
-        });
-    }
-    
-    // 显示小组主界面
+    // 日历相关方法
     async showGroups() {
         document.getElementById('groupsModal').classList.remove('hidden');
         await this.loadJoinedGroups();
@@ -316,41 +358,83 @@ class StudyApp {
     
     // 加载已加入的小组
     async loadJoinedGroups() {
-        // 临时使用模拟数据
-        const hasGroups = Math.random() > 0.5; // 随机显示有小组或没小组
-        
-        if (hasGroups) {
-            const mockGroups = [
-                {
-                    id: 'g_001',
-                    name: '考研必胜小队',
-                    description: '2024考研一起加油！',
-                    member_count: 5,
-                    max_members: 10,
-                    today_total_time: 620
-                }
-            ];
+        if (!this.useCloudBase) {
+            // 使用本地存储模式 - 临时使用模拟数据
+            const hasGroups = Math.random() > 0.5; // 随机显示有小组或没小组
             
-            const container = document.getElementById('joinedGroups');
-            container.innerHTML = mockGroups.map(group => `
-                <div class="group-item" onclick="app.showGroupDetail('${group.id}')">
-                    <div class="group-avatar">👥</div>
-                    <div class="group-info">
-                        <div class="group-name">${group.name}</div>
-                        <div class="group-meta">${group.member_count}/${group.max_members}人 · 今日总时长 ${group.today_total_time}分</div>
+            if (hasGroups) {
+                const mockGroups = [
+                    {
+                        id: 'g_001',
+                        name: '考研必胜小队',
+                        description: '2024考研一起加油！',
+                        member_count: 5,
+                        max_members: 10,
+                        today_total_time: 620
+                    }
+                ];
+                
+                const container = document.getElementById('joinedGroups');
+                container.innerHTML = mockGroups.map(group => `
+                    <div class="group-item" onclick="app.showGroupDetail('${group.id}')">
+                        <div class="group-avatar">👥</div>
+                        <div class="group-info">
+                            <div class="group-name">${group.name}</div>
+                            <div class="group-meta">${group.member_count}/${group.max_members}人 · 今日总时长 ${group.today_total_time}分</div>
+                        </div>
+                        <div class="group-status active">正在学习</div>
                     </div>
-                    <div class="group-status active">正在学习</div>
-                </div>
-            `).join('');
-        } else {
-            // 显示空状态
-            document.getElementById('joinedGroups').innerHTML = `
-                <div class="empty-groups">
-                    <div class="empty-icon">👥</div>
-                    <div class="empty-text">你还没有加入任何小组</div>
-                    <div class="empty-hint">创建或加入小组，和小伙伴一起学习吧！</div>
-                </div>
-            `;
+                `).join('');
+            } else {
+                // 显示空状态
+                document.getElementById('joinedGroups').innerHTML = `
+                    <div class="empty-groups">
+                        <div class="empty-icon">👥</div>
+                        <div class="empty-text">你还没有加入任何小组</div>
+                        <div class="empty-hint">创建或加入小组，和小伙伴一起学习吧！</div>
+                    </div>
+                `;
+            }
+            return;
+        }
+        
+        // 使用CloudBase
+        try {
+            const result = await this.cloudbase.callFunction({
+                name: 'getMyGroups',
+                data: { userId: await this.getUserId() }
+            });
+            
+            if (!result.result.success) {
+                throw new Error(result.result.error);
+            }
+            
+            const groups = result.result.groups;
+            
+            if (groups.length > 0) {
+                const container = document.getElementById('joinedGroups');
+                container.innerHTML = groups.map(group => `
+                    <div class="group-item" onclick="app.showGroupDetail('${group.id}')">
+                        <div class="group-avatar">👥</div>
+                        <div class="group-info">
+                            <div class="group-name">${group.name}</div>
+                            <div class="group-meta">${group.member_count}/${group.max_members}人 · 今日总时长 ${group.today_total_time}分</div>
+                        </div>
+                        ${group.my_role === 'owner' ? '<div class="group-badge">组长</div>' : ''}
+                    </div>
+                `).join('');
+            } else {
+                document.getElementById('joinedGroups').innerHTML = `
+                    <div class="empty-groups">
+                        <div class="empty-icon">👥</div>
+                        <div class="empty-text">你还没有加入任何小组</div>
+                        <div class="empty-hint">创建或加入小组，和小伙伴一起学习吧！</div>
+                    </div>
+                `;
+            }
+        } catch (err) {
+            console.error('加载小组列表失败:', err);
+            alert('加载小组列表失败: ' + err.message);
         }
     }
     
@@ -379,13 +463,38 @@ class StudyApp {
         }
         
         try {
-            // 生成邀请码
-            const joinCode = this.generateJoinCode();
+            if (!this.useCloudBase) {
+                // 本地模式 - 生成邀请码
+                const joinCode = this.generateJoinCode();
+                
+                console.log('创建小组（本地模式）：', { name, description, maxMembers, joinCode });
+                
+                alert(`小组"${name}"创建成功！（本地模式）\n\n邀请码：${joinCode}\n\n快去邀请小伙伴加入吧！`);
+                
+                document.getElementById('createGroupModal').classList.add('hidden');
+                
+                // 刷新小组列表
+                await this.loadJoinedGroups();
+                return;
+            }
             
-            // 这里应该调用后端API创建小组
-            console.log('创建小组：', { name, description, maxMembers, joinCode });
+            // CloudBase模式
+            const result = await this.cloudbase.callFunction({
+                name: 'createGroup',
+                data: {
+                    name,
+                    description,
+                    maxMembers,
+                    userId: await this.getUserId(),
+                    userName: '我' // TODO: 获取真实用户名
+                }
+            });
             
-            alert(`小组"${name}"创建成功！\n\n邀请码：${joinCode}\n\n快去邀请小伙伴加入吧！`);
+            if (!result.result.success) {
+                throw new Error(result.result.error);
+            }
+            
+            alert(`小组"${name}"创建成功！\n\n邀请码：${result.result.joinCode}\n\n快去邀请小伙伴加入吧！`);
             
             document.getElementById('createGroupModal').classList.add('hidden');
             
@@ -412,10 +521,13 @@ class StudyApp {
     async showGroupDetail(groupId) {
         document.getElementById('groupsModal').classList.add('hidden');
         document.getElementById('groupDetailModal').classList.remove('hidden');
-        
+
         // 设置当前小组ID
         this.currentGroup = { id: groupId, name: '考研必胜小队' };
-        
+
+        // 保存当前小组ID到localStorage
+        localStorage.setItem('currentGroupId', groupId);
+
         // 加载小组详情
         await this.loadGroupDetail(groupId);
         await this.loadMembers(groupId);
@@ -424,70 +536,136 @@ class StudyApp {
     
     // 加载小组详情
     async loadGroupDetail(groupId) {
-        // 模拟数据
-        const group = {
-            name: '考研必胜小队',
-            member_count: 5,
-            max_members: 10,
-            today_total_time: 620
-        };
+        if (!this.useCloudBase) {
+            // 本地模式 - 使用模拟数据
+            const group = {
+                name: '考研必胜小队',
+                member_count: 5,
+                max_members: 10,
+                today_total_time: 620
+            };
+            
+            document.getElementById('groupName').textContent = group.name;
+            document.querySelector('.group-stats').textContent =
+                `${group.member_count}/${group.max_members}人 · 今日${group.today_total_time}分钟`;
+            return;
+        }
         
-        document.getElementById('groupName').textContent = group.name;
-        document.querySelector('.group-stats').textContent = 
-            `${group.member_count}/${group.max_members}人 · 今日${group.today_total_time}分钟`;
+        // CloudBase模式
+        try {
+            const result = await this.cloudbase.callFunction({
+                name: 'getGroupDetail',
+                data: { groupId }
+            });
+            
+            if (!result.result.success) {
+                throw new Error(result.result.error);
+            }
+            
+            const data = result.result;
+            
+            document.getElementById('groupName').textContent = data.group.name;
+            document.querySelector('.group-stats').textContent =
+                `${data.group.member_count}/${data.group.max_members}人 · 今日${data.group.today_total_time}分钟`;
+            
+        } catch (err) {
+            console.error('加载小组详情失败:', err);
+            alert('加载小组详情失败: ' + err.message);
+        }
     }
     
     // 加载小组成员
     async loadMembers(groupId) {
-        // 模拟数据
-        const mockMembers = [
-            {
-                user_id: 'u_001',
-                user_name: '张三',
-                role: 'owner',
-                current_status: 'studying',
-                current_subject: '数学',
-                study_start_time: new Date(Date.now() - 25 * 60 * 1000),
-                today_study_time: 240,
-                contribution_score: 150
-            },
-            {
-                user_id: 'u_002',
-                user_name: '李四',
-                role: 'member',
-                current_status: 'resting',
-                today_study_time: 180,
-                contribution_score: 120
-            },
-            {
-                user_id: 'u_003',
-                user_name: '王五',
-                role: 'member',
-                current_status: 'offline',
-                today_study_time: 90,
-                contribution_score: 80
-            }
-        ];
-        
-        const container = document.getElementById('membersList');
-        container.innerHTML = mockMembers.map(member => {
-            const studying = member.current_status === 'studying';
-            const elapsed = studying ? Math.floor((Date.now() - new Date(member.study_start_time)) / 60000) : 0;
+        if (!this.useCloudBase) {
+            // 本地模式 - 使用模拟数据
+            const mockMembers = [
+                {
+                    user_id: 'u_001',
+                    user_name: '张三',
+                    role: 'owner',
+                    current_status: 'studying',
+                    current_subject: '数学',
+                    study_start_time: new Date(Date.now() - 25 * 60 * 1000),
+                    today_study_time: 240,
+                    contribution_score: 150
+                },
+                {
+                    user_id: 'u_002',
+                    user_name: '李四',
+                    role: 'member',
+                    current_status: 'resting',
+                    today_study_time: 180,
+                    contribution_score: 120
+                },
+                {
+                    user_id: 'u_003',
+                    user_name: '王五',
+                    role: 'member',
+                    current_status: 'offline',
+                    today_study_time: 90,
+                    contribution_score: 80
+                }
+            ];
             
-            return `
-                <div class="member-item ${member.current_status}" onclick="app.showMemberMenu('${member.user_id}')">
-                    <div class="member-avatar">${member.user_name.charAt(0)}</div>
-                    <div class="member-details">
-                        <div class="member-name">${member.user_name}${member.role === 'owner' ? '（组长）' : ''}</div>
-                        <div class="member-status">
-                            ${studying ? `正在学习 · ${member.current_subject} · 已学${elapsed}分钟` : 
-                              member.current_status === 'resting' ? '休息中' : '离线'}
+            const container = document.getElementById('membersList');
+            container.innerHTML = mockMembers.map(member => {
+                const studying = member.current_status === 'studying';
+                const elapsed = studying ? Math.floor((Date.now() - new Date(member.study_start_time)) / 60000) : 0;
+                
+                return `
+                    <div class="member-item ${member.current_status}" onclick="app.showMemberMenu('${member.user_id}')">
+                        <div class="member-avatar">${member.user_name.charAt(0)}</div>
+                        <div class="member-details">
+                            <div class="member-name">${member.user_name}${member.role === 'owner' ? '（组长）' : ''}</div>
+                            <div class="member-status">
+                                ${studying ? `正在学习 · ${member.current_subject} · 已学${elapsed}分钟` :
+                                  member.current_status === 'resting' ? '休息中' : '离线'}
+                            </div>
                         </div>
+                        <div class="member-score">${member.contribution_score}分</div>
                     </div>
-                    <div class="member-score">${member.contribution_score}分</div>
-                </div>
-            `;
-        }).join('');
+                `;
+            }).join('');
+            return;
+        }
+        
+        // CloudBase模式
+        try {
+            const result = await this.cloudbase.callFunction({
+                name: 'getGroupDetail',
+                data: { groupId }
+            });
+            
+            if (!result.result.success) {
+                throw new Error(result.result.error);
+            }
+            
+            const members = result.result.members;
+            
+            const container = document.getElementById('membersList');
+            container.innerHTML = members.map(member => {
+                const studying = member.current_status === 'studying';
+                const elapsed = studying ? Math.floor((Date.now() - new Date(member.study_start_time)) / 60000) : 0;
+                
+                return `
+                    <div class="member-item ${member.current_status}" onclick="app.showMemberMenu('${member.user_id}')">
+                        <div class="member-avatar">${member.user_name.charAt(0)}</div>
+                        <div class="member-details">
+                            <div class="member-name">${member.user_name}${member.role === 'owner' ? '（组长）' : ''}</div>
+                            <div class="member-status">
+                                ${studying ? `正在学习 · ${member.current_subject} · 已学${elapsed}分钟` :
+                                  member.current_status === 'resting' ? '休息中' : '离线'}
+                            </div>
+                        </div>
+                        <div class="member-score">${member.contribution_score}分</div>
+                    </div>
+                `;
+            }).join('');
+            
+        } catch (err) {
+            console.error('加载小组成员失败:', err);
+            alert('加载小组成员失败: ' + err.message);
+        }
     }
     
     // 显示成员菜单（点击成员）
@@ -503,38 +681,70 @@ class StudyApp {
     
     // 加载小组动态
     async loadActivities(groupId) {
-        // 模拟数据
-        const mockActivities = [
-            {
-                user_name: '李四',
-                activity_type: 'complete',
-                activity_content: '完成了45分钟英语学习',
-                created_at: new Date(Date.now() - 10 * 60000)
-            },
-            {
-                user_name: '王五',
-                activity_type: 'escape',
-                activity_content: '逃跑了，连25分钟都坚持不了？',
-                created_at: new Date(Date.now() - 30 * 60000)
-            },
-            {
-                user_name: '张三',
-                activity_type: 'join',
-                activity_content: '加入了小组',
-                created_at: new Date(Date.now() - 60 * 60000)
-            }
-        ];
+        if (!this.useCloudBase) {
+            // 本地模式 - 使用模拟数据
+            const mockActivities = [
+                {
+                    user_name: '李四',
+                    activity_type: 'complete',
+                    activity_content: '完成了45分钟英语学习',
+                    created_at: new Date(Date.now() - 10 * 60000)
+                },
+                {
+                    user_name: '王五',
+                    activity_type: 'escape',
+                    activity_content: '逃跑了，连25分钟都坚持不了？',
+                    created_at: new Date(Date.now() - 30 * 60000)
+                },
+                {
+                    user_name: '张三',
+                    activity_type: 'join',
+                    activity_content: '加入了小组',
+                    created_at: new Date(Date.now() - 60 * 60000)
+                }
+            ];
+            
+            const container = document.getElementById('groupActivities');
+            container.innerHTML = mockActivities.map(activity => {
+                const minutesAgo = Math.floor((Date.now() - new Date(activity.created_at)) / 60000);
+                return `
+                    <div class="activity-item">
+                        <span class="activity-time">${minutesAgo}分钟前</span>
+                        <span class="activity-content">${activity.activity_content}</span>
+                    </div>
+                `;
+            }).join('');
+            return;
+        }
         
-        const container = document.getElementById('groupActivities');
-        container.innerHTML = mockActivities.map(activity => {
-            const minutesAgo = Math.floor((Date.now() - new Date(activity.created_at)) / 60000);
-            return `
-                <div class="activity-item">
-                    <span class="activity-time">${minutesAgo}分钟前</span>
-                    <span class="activity-content">${activity.activity_content}</span>
-                </div>
-            `;
-        }).join('');
+        // CloudBase模式
+        try {
+            const result = await this.cloudbase.callFunction({
+                name: 'getGroupDetail',
+                data: { groupId }
+            });
+            
+            if (!result.result.success) {
+                throw new Error(result.result.error);
+            }
+            
+            const activities = result.result.activities;
+            
+            const container = document.getElementById('groupActivities');
+            container.innerHTML = activities.map(activity => {
+                const minutesAgo = Math.floor((Date.now() - new Date(activity.created_at)) / 60000);
+                return `
+                    <div class="activity-item">
+                        <span class="activity-time">${minutesAgo}分钟前</span>
+                        <span class="activity-content">${activity.activity_content}</span>
+                    </div>
+                `;
+            }).join('');
+            
+        } catch (err) {
+            console.error('加载小组动态失败:', err);
+            alert('加载小组动态失败: ' + err.message);
+        }
     }
     
     // 分享小组
@@ -564,27 +774,74 @@ class StudyApp {
     
     // 加载小组排行榜
     async loadGroupRankings() {
-        // 模拟排行榜数据
-        const mockRankings = [
-            { rank: 1, user_name: '张三', study_time: 240, complete_count: 3 },
-            { rank: 2, user_name: '李四', study_time: 180, complete_count: 2 },
-            { rank: 3, user_name: '王五', study_time: 120, complete_count: 1 }
-        ];
-        
-        const container = document.getElementById('groupRankingList');
-        container.innerHTML = mockRankings.map(item => `
-            <div class="ranking-item rank-${item.rank}">
-                <div class="rank-number">${item.rank}</div>
-                <div class="user-info">
-                    <div class="user-avatar">${item.user_name.charAt(0)}</div>
-                    <div class="user-name">${item.user_name}</div>
+        if (!this.useCloudBase) {
+            // 本地模式 - 使用模拟数据
+            const mockRankings = [
+                { rank: 1, user_name: '张三', study_time: 240, complete_count: 3 },
+                { rank: 2, user_name: '李四', study_time: 180, complete_count: 2 },
+                { rank: 3, user_name: '王五', study_time: 120, complete_count: 1 }
+            ];
+            
+            const container = document.getElementById('groupRankingList');
+            container.innerHTML = mockRankings.map(item => `
+                <div class="ranking-item rank-${item.rank}">
+                    <div class="rank-number">${item.rank}</div>
+                    <div class="user-info">
+                        <div class="user-avatar">${item.user_name.charAt(0)}</div>
+                        <div class="user-name">${item.user_name}</div>
+                    </div>
+                    <div class="study-time">${item.study_time}分钟</div>
                 </div>
-                <div class="study-time">${item.study_time}分钟</div>
-            </div>
-        `).join('');
+            `).join('');
+            
+            // 显示排行榜区域
+            document.querySelector('.group-ranking').style.display = 'block';
+            return;
+        }
         
-        // 显示排行榜区域
-        document.querySelector('.group-ranking').style.display = 'block';
+        // CloudBase模式
+        try {
+            const result = await this.cloudbase.callFunction({
+                name: 'getMyGroups',
+                data: { userId: await this.getUserId() }
+            });
+            
+            if (!result.result.success) {
+                throw new Error(result.result.error);
+            }
+            
+            const groups = result.result.groups;
+            
+            if (groups.length > 0) {
+                const groupId = groups[0].id;
+                const detailResult = await this.cloudbase.callFunction({
+                    name: 'getGroupDetail',
+                    data: { groupId }
+                });
+                
+                if (detailResult.result.success && detailResult.result.ranking) {
+                    const rankings = detailResult.result.ranking;
+                    
+                    const container = document.getElementById('groupRankingList');
+                    container.innerHTML = rankings.map(item => `
+                        <div class="ranking-item rank-${item.rank}">
+                            <div class="rank-number">${item.rank}</div>
+                            <div class="user-info">
+                                <div class="user-avatar">${item.user_name.charAt(0)}</div>
+                                <div class="user-name">${item.user_name}</div>
+                            </div>
+                            <div class="study-time">${item.study_time}分钟</div>
+                        </div>
+                    `).join('');
+                    
+                    // 显示排行榜区域
+                    document.querySelector('.group-ranking').style.display = 'block';
+                }
+            }
+        } catch (err) {
+            console.error('加载小组排行榜失败:', err);
+            alert('加载小组排行榜失败: ' + err.message);
+        }
     }
     
     // 显示加入小组弹窗
@@ -604,9 +861,34 @@ class StudyApp {
         }
         
         try {
-            console.log('加入小组，邀请码：', joinCode);
+            if (!this.useCloudBase) {
+                // 本地模式
+                console.log('加入小组（本地模式），邀请码：', joinCode);
+                
+                alert(`加入成功！（本地模式）\n\n欢迎加入学习小组！`);
+                
+                document.getElementById('joinGroupModal').classList.add('hidden');
+                
+                // 刷新小组列表
+                await this.loadJoinedGroups();
+                return;
+            }
             
-            alert(`加入成功！\n\n欢迎加入学习小组！`);
+            // CloudBase模式
+            const result = await this.cloudbase.callFunction({
+                name: 'joinGroup',
+                data: {
+                    joinCode,
+                    userId: await this.getUserId(),
+                    userName: '我' // TODO: 获取真实用户名
+                }
+            });
+            
+            if (!result.result.success) {
+                throw new Error(result.result.error);
+            }
+            
+            alert(`加入成功！\n\n欢迎加入"${result.result.groupName}"小组！`);
             
             document.getElementById('joinGroupModal').classList.add('hidden');
             
@@ -956,21 +1238,21 @@ class StudyApp {
     startStudy() {
         this.isRunning = true;
         this.startTime = Date.now();
-        
+
         console.log('=== 开始学习流程开始 ===');
         console.log('音频系统状态:', this.audioEnabled ? '已启用' : '未启用');
         console.log('当前选择音效:', this.currentSound);
-        
+
         // 隐藏地址栏（全屏效果）
         if (window.scrollTo) {
             setTimeout(() => {
                 window.scrollTo(0, 1);
             }, 100);
         }
-        
+
         // 请求屏幕常亮（防止锁屏）
         this.requestWakeLock();
-        
+
         // 恢复音频上下文（必须用户交互后调用）
         if (this.audioContext) {
             console.log('音频上下文状态:', this.audioContext.state);
@@ -1001,44 +1283,44 @@ class StudyApp {
                 }, 100);
             }
         }
-        
+
         // 显示开始语录
         this.showDialog('start');
-        
+
         // 更新按钮状态
         document.getElementById('startBtn').classList.add('hidden');
         document.getElementById('stopBtn').classList.remove('hidden');
-        
+
         // 开始计时
         this.timer = setInterval(() => {
             this.remainingTime--;
             this.updateDisplay();
-            
+
             if (this.remainingTime <= 0) {
                 this.completeStudy();
             }
         }, 1000);
-        
+
         console.log('=== 开始学习流程结束 ===');
     }
-    
+
     stopStudy() {
         if (!this.isRunning) return;
-        
+
         clearInterval(this.timer);
         this.isRunning = false;
-        
+
         // 释放屏幕常亮
         this.releaseWakeLock();
-        
+
         // 停止白噪音
         this.stopSound();
-        
+
         // 计算实际学习时间（分钟）
         const actualMinutes = Math.round((Date.now() - this.startTime) / 1000 / 60);
         this.stats.todayTime += actualMinutes;
         this.stats.escapeCount++;
-        
+
         // 保存逃跑数据到日历
         const today = new Date();
         const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
@@ -1048,14 +1330,14 @@ class StudyApp {
             completeCount: 0,
             subject: this.currentSubject
         });
-        
+
         // 显示逃跑语录
         this.showDialog('escape');
-        
+
         // 更新显示
         this.updateStats();
         this.saveStats();
-        
+
         // 重置状态
         this.resetState();
     }
@@ -1063,13 +1345,13 @@ class StudyApp {
     completeStudy() {
         clearInterval(this.timer);
         this.isRunning = false;
-        
+
         // 释放屏幕常亮
         this.releaseWakeLock();
-        
+
         // 停止白噪音
         this.stopSound();
-        
+
         // 保存当天的学习数据到日历
         const today = new Date();
         const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
@@ -1079,23 +1361,23 @@ class StudyApp {
             completeCount: 1,
             subject: this.currentSubject
         });
-        
+
         // 更新统计数据
         this.stats.todayTime += this.selectedTime;
         this.stats.completeCount++;
-        
+
         // 显示完成语录
         this.showDialog('complete');
-        
+
         // 更新显示
         this.updateStats();
         this.saveStats();
-        
+
         // 生成海报
         setTimeout(() => {
             this.generatePoster();
         }, 1500);
-        
+
         // 重置状态
         this.resetState();
     }

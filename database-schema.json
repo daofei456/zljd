@@ -1,0 +1,80 @@
+{
+  "collections": [
+    {
+      "name": "users",
+      "description": "用户表",
+      "indexes": [
+        {
+          "name": "openId_index",
+          "fields": ["openId"]
+        },
+        {
+          "name": "createTime_index",
+          "fields": ["createTime"]
+        }
+      ]
+    },
+    {
+      "name": "groups",
+      "description": "小组表",
+      "indexes": [
+        {
+          "name": "joinCode_index",
+          "fields": ["joinCode"]
+        },
+        {
+          "name": "ownerId_index",
+          "fields": ["ownerId"]
+        }
+      ]
+    },
+    {
+      "name": "group_members",
+      "description": "小组成员关系表",
+      "indexes": [
+        {
+          "name": "groupId_userId_index",
+          "fields": ["groupId", "userId"]
+        },
+        {
+          "name": "userId_index",
+          "fields": ["userId"]
+        }
+      ]
+    },
+    {
+      "name": "group_activities",
+      "description": "小组动态表",
+      "indexes": [
+        {
+          "name": "groupId_createTime_index",
+          "fields": ["groupId", "createTime"]
+        }
+      ]
+    },
+    {
+      "name": "study_records",
+      "description": "学习记录表",
+      "indexes": [
+        {
+          "name": "userId_date_index",
+          "fields": ["userId", "date"]
+        },
+        {
+          "name": "groupId_date_index",
+          "fields": ["groupId", "date"]
+        }
+      ]
+    },
+    {
+      "name": "study_calendar",
+      "description": "学习日历表",
+      "indexes": [
+        {
+          "name": "userId_date_index",
+          "fields": ["userId", "date"]
+        }
+      ]
+    }
+  ]
+}

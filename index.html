@@ -52,7 +52,6 @@
             <!-- 日历切换按钮 -->
             <div class="calendar-toggle">
                 <button id="showCalendar" class="btn-secondary">📅 学习日历</button>
-                <button id="showGroups" class="btn-secondary">👥 学习小组</button>
             </div>
 
             <div class="stats-bar">
@@ -79,108 +78,6 @@
                     <p id="dialogText"></p>
                 </div>
                 <button id="dialogClose" class="dialog-btn">知道了</button>
-            </div>
-        </div>
-
-        <!-- 小组界面 -->
-        <div id="groupsModal" class="modal-overlay hidden">
-            <div class="groups-container">
-            <div class="groups-header">
-                <h2>我的学习小组</h2>
-                <div class="header-actions">
-                    <button id="joinGroup" class="btn-secondary" style="margin-right: 10px;">加入小组</button>
-                    <button id="createGroup" class="btn-primary">创建小组</button>
-                </div>
-            </div>
-            
-            <div id="joinedGroups" class="groups-list">
-                    <div class="empty-groups">
-                        <div class="empty-icon">👥</div>
-                        <div class="empty-text">你还没有加入任何小组</div>
-                        <div class="empty-hint">创建或加入小组，和小伙伴一起学习吧！</div>
-                    </div>
-                </div>
-                
-                <div class="group-ranking" style="display: none;">
-                    <h3>🏆 小组排行榜</h3>
-                    <div id="groupRankingList" class="ranking-list"></div>
-                </div>
-                
-                <button id="closeGroups" class="btn-secondary">关闭</button>
-            </div>
-        </div>
-
-        <!-- 小组详情界面 -->
-        <div id="groupDetailModal" class="modal-overlay hidden">
-            <div class="group-detail-container">
-                <div class="group-detail-header">
-                    <div class="group-info">
-                        <h2 id="groupName">学习小组</h2>
-                        <div class="group-stats">0/10人 · 今日0分钟</div>
-                    </div>
-                    <div class="group-actions">
-                        <button id="shareGroup" class="btn-primary">邀请成员</button>
-                    </div>
-                </div>
-                
-                <div class="members-status">
-                    <h3>成员状态</h3>
-                    <div id="membersList" class="members-list">
-                        <div class="empty-members">
-                            <div class="empty-icon">📚</div>
-                            <div class="empty-text">还没有成员加入</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="group-feed">
-                    <h3>小组动态</h3>
-                    <div id="groupActivities" class="activities-list"></div>
-                </div>
-                
-                <button id="closeGroupDetail" class="btn-secondary">返回</button>
-            </div>
-        </div>
-
-        <!-- 创建小组弹窗 -->
-        <div id="createGroupModal" class="modal-overlay hidden">
-            <div class="create-group-container">
-                <h2>创建学习小组</h2>
-                <div class="form-group">
-                    <label>小组名称</label>
-                    <input type="text" id="groupNameInput" placeholder="例如：考研必胜小队" maxlength="20">
-                </div>
-                <div class="form-group">
-                    <label>小组描述</label>
-                    <textarea id="groupDescInput" placeholder="介绍一下你们的小组..." maxlength="100" rows="3"></textarea>
-                </div>
-                <div class="form-group">
-                    <label>人数上限</label>
-                    <select id="groupMaxMembers">
-                        <option value="5">5人</option>
-                        <option value="10" selected>10人</option>
-                        <option value="20">20人</option>
-                    </select>
-                </div>
-                <div class="form-actions">
-                    <button id="confirmCreateGroup" class="btn-primary">创建</button>
-                    <button id="cancelCreateGroup" class="btn-secondary">取消</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- 加入小组弹窗 -->
-        <div id="joinGroupModal" class="modal-overlay hidden">
-            <div class="join-group-container">
-                <h2>加入学习小组</h2>
-                <div class="form-group">
-                    <label>邀请码</label>
-                    <input type="text" id="joinCodeInput" placeholder="请输入6位邀请码" maxlength="6">
-                </div>
-                <div class="form-actions">
-                    <button id="confirmJoinGroup" class="btn-primary">加入</button>
-                    <button id="cancelJoinGroup" class="btn-secondary">取消</button>
-                </div>
             </div>
         </div>
 
