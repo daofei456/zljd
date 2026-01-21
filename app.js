@@ -229,6 +229,188 @@ class StudyApp {
                 return e.returnValue;
             }
         });
+        
+        // 日历相关事件
+        document.getElementById('showCalendar').addEventListener('click', () => {
+            this.showCalendar();
+        });
+        
+        document.getElementById('closeCalendar').addEventListener('click', () => {
+            document.getElementById('calendarModal').classList.add('hidden');
+        });
+        
+        document.getElementById('prevMonth').addEventListener('click', () => {
+            this.changeMonth(-1);
+        });
+        
+        document.getElementById('nextMonth').addEventListener('click', () => {
+            this.changeMonth(1);
+        });
+    }
+    
+    // 日历相关方法
+    showCalendar() {
+        document.getElementById('calendarModal').classList.remove('hidden');
+        this.currentCalendarDate = new Date();
+        this.renderCalendar();
+        this.checkEmptyDays();
+    }
+    
+    renderCalendar() {
+        const year = this.currentCalendarDate.getFullYear();
+        const month = this.currentCalendarDate.getMonth();
+        
+        // 更新月份标题
+        const monthNames = ['1月', '2月', '3月', '4月', '5月', '6月', 
+                           '7月', '8月', '9月', '10月', '11月', '12月'];
+        document.getElementById('currentMonth').textContent = `${year}年${monthNames[month]}`;
+        
+        // 获取当月第一天和最后一天
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        
+        // 获取当月第一天是星期几（0=周日）
+        const firstDayWeek = firstDay.getDay();
+        
+        // 清空日历
+        const calendarDays = document.getElementById('calendarDays');
+        calendarDays.innerHTML = '';
+        
+        // 添加空白天数
+        for (let i = 0; i < firstDayWeek; i++) {
+            const emptyDay = document.createElement('div');
+            emptyDay.className = 'calendar-day empty';
+            calendarDays.appendChild(emptyDay);
+        }
+        
+        // 添加当月天数
+        const today = new Date();
+        for (let day = 1; day <= lastDay.getDate(); day++) {
+            const dayElement = document.createElement('div');
+            dayElement.className = 'calendar-day';
+            dayElement.textContent = day;
+            
+            // 检查是否是今天
+            if (year === today.getFullYear() && 
+                month === today.getMonth() && 
+                day === today.getDate()) {
+                dayElement.classList.add('today');
+            }
+            
+            // 获取当天的学习数据
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const dayData = this.getDayData(dateStr);
+            
+            // 根据学习时长设置颜色
+            if (dayData && dayData.totalTime > 0) {
+                let level = 0;
+                if (dayData.totalTime < 30) level = 1;
+                else if (dayData.totalTime < 60) level = 2;
+                else if (dayData.totalTime < 90) level = 3;
+                else level = 4;
+                
+                dayElement.classList.add(`level-${level}`);
+                
+                // 添加点击事件显示详情
+                dayElement.addEventListener('click', () => {
+                    this.showDayDetail(dayData, dateStr);
+                });
+            } else {
+                dayElement.classList.add('level-0');
+            }
+            
+            calendarDays.appendChild(dayElement);
+        }
+    }
+    
+    changeMonth(direction) {
+        this.currentCalendarDate.setMonth(this.currentCalendarDate.getMonth() + direction);
+        this.renderCalendar();
+        this.checkEmptyDays();
+    }
+    
+    // 检查空日期并触发毒舌提醒
+    checkEmptyDays() {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = today.getMonth();
+        const day = today.getDate();
+        
+        // 检查过去7天是否有未学习的天数
+        let emptyDays = 0;
+        for (let i = 1; i <= 7; i++) {
+            const checkDate = new Date(year, month, day - i);
+            if (checkDate >= new Date(2024, 0, 1)) { // 从2024年开始计算
+                const dateStr = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}-${String(checkDate.getDate()).padStart(2, '0')}`;
+                const dayData = this.getDayData(dateStr);
+                if (!dayData || dayData.totalTime === 0) {
+                    emptyDays++;
+                }
+            }
+        }
+        
+        // 如果有超过3天空着，显示毒舌提醒
+        if (emptyDays >= 3) {
+            const quotes = [
+                `过去7天你有${emptyDays}天没学习，是在等考试延期吗？`,
+                `空着的日历就像你空着的脑子，赶紧填满！`,
+                `连续${emptyDays}天不学习，你是想放弃了吗？`,
+                `看看这空白的日历，再看看你空白的未来`,
+                `打卡断更${emptyDays}天，你离上岸越来越远了`
+            ];
+            const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+            
+            // 延迟显示提醒，避免与开始弹窗冲突
+            setTimeout(() => {
+                document.getElementById('dialogText').textContent = randomQuote;
+                document.getElementById('dialogAvatar').textContent = '👿';
+                document.querySelector('.dialog-box').className = 'dialog-box escape';
+                document.getElementById('devilDialog').classList.remove('hidden');
+            }, 2000);
+        }
+    }
+    
+    // 获取某天的学习数据
+    getDayData(dateStr) {
+        const allData = JSON.parse(localStorage.getItem('studyCalendar') || '{}');
+        return allData[dateStr];
+    }
+    
+    // 保存某天的学习数据
+    saveDayData(dateStr, data) {
+        const allData = JSON.parse(localStorage.getItem('studyCalendar') || '{}');
+        
+        // 如果已有数据，累加
+        if (allData[dateStr]) {
+            allData[dateStr].totalTime += data.totalTime || 0;
+            allData[dateStr].escapeCount += data.escapeCount || 0;
+            allData[dateStr].completeCount += data.completeCount || 0;
+            // 保存最后一次的科目
+            if (data.subject) {
+                allData[dateStr].subject = data.subject;
+            }
+        } else {
+            allData[dateStr] = data;
+        }
+        
+        localStorage.setItem('studyCalendar', JSON.stringify(allData));
+    }
+    
+    // 显示某天详情
+    showDayDetail(dayData, dateStr) {
+        const [year, month, day] = dateStr.split('-');
+        const date = new Date(year, month - 1, day);
+        const dateText = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+        
+        let detail = `${dateText} 学习详情：\n\n`;
+        detail += `📚 学习时长：${dayData.totalTime}分钟\n`;
+        detail += `✅ 完成番茄：${dayData.completeCount}个\n`;
+        detail += `😱 逃跑次数：${dayData.escapeCount}次\n`;
+        if (dayData.subject) {
+            detail += `📝 学习科目：${dayData.subject}\n`;
+        }
+        
+        alert(detail);
     }
     
     showSubjectModal() {
@@ -321,6 +503,16 @@ class StudyApp {
         this.stats.todayTime += actualMinutes;
         this.stats.escapeCount++;
         
+        // 保存逃跑数据到日历
+        const today = new Date();
+        const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        this.saveDayData(dateStr, {
+            totalTime: actualMinutes,
+            escapeCount: 1,
+            completeCount: 0,
+            subject: this.currentSubject
+        });
+        
         // 显示逃跑语录
         this.showDialog('escape');
         
@@ -341,6 +533,16 @@ class StudyApp {
         
         // 停止白噪音
         this.stopSound();
+        
+        // 保存当天的学习数据到日历
+        const today = new Date();
+        const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        this.saveDayData(dateStr, {
+            totalTime: this.selectedTime,
+            escapeCount: 0,
+            completeCount: 1,
+            subject: this.currentSubject
+        });
         
         // 更新统计数据
         this.stats.todayTime += this.selectedTime;
