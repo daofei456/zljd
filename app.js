@@ -11,6 +11,7 @@ class StudyApp {
         this.wakeLock = null; // 屏幕常亮对象
         this.audio = null; // 白噪音音频对象
         this.currentSound = 'none'; // 当前选择的音效
+        this.audioEnabled = false; // 音频是否启用
         
         // 统计数据
         this.stats = {
@@ -22,17 +23,22 @@ class StudyApp {
         // 加载统计数据
         this.loadStats();
         
-        // 白噪音音频（使用base64编码的小音频片段）
-        // 这些是极短的音频片段，用于循环播放模拟白噪音
+        // 音效配置
         this.sounds = {
             none: null,
-            // 雨声（实际使用base64编码的短音频）
-            rain: 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZURE',
-            // 图书馆（实际使用base64编码的短音频）
-            library: 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZURE',
-            // 咖啡馆（实际使用base64编码的短音频）
-            cafe: 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZURE'
+            rain: 'rain',
+            library: 'library',
+            cafe: 'cafe'
         };
+        
+        // Web Audio API 上下文
+        this.audioContext = null;
+        this.gainNode = null;
+        this.noiseSource = null;
+        this.noiseType = null;
+        
+        // 初始化音频
+        this.initAudio();
         
         // 毒舌语录库
         this.quotes = {
@@ -75,6 +81,45 @@ class StudyApp {
         };
         
         this.init();
+    }
+    
+    // 初始化音频
+    initAudio() {
+        console.log('初始化音频系统...');
+        console.log('浏览器信息:', navigator.userAgent);
+        console.log('是否支持AudioContext:', !!window.AudioContext);
+        console.log('是否支持webkitAudioContext:', !!window.webkitAudioContext);
+        
+        // 检查是否支持 Web Audio API
+        if (!window.AudioContext && !window.webkitAudioContext) {
+            console.error('浏览器不支持 Web Audio API');
+            alert('您的浏览器不支持音频功能');
+            this.audioEnabled = false;
+            return;
+        }
+        
+        try {
+            // 创建音频上下文
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            console.log('使用 AudioContext:', AudioContext.name);
+            
+            this.audioContext = new AudioContext();
+            console.log('Web Audio API 初始化成功');
+            console.log('音频状态:', this.audioContext.state);
+            console.log('采样率:', this.audioContext.sampleRate);
+            this.audioEnabled = true;
+            
+            // 监听状态变化
+            this.audioContext.onstatechange = () => {
+                console.log('音频状态变化:', this.audioContext.state);
+            };
+        } catch (err) {
+            console.error('音频初始化失败:', err);
+            console.error('错误名称:', err.name);
+            console.error('错误信息:', err.message);
+            alert('音频初始化失败: ' + err.message);
+            this.audioEnabled = false;
+        }
     }
     
     init() {
@@ -194,6 +239,10 @@ class StudyApp {
         this.isRunning = true;
         this.startTime = Date.now();
         
+        console.log('=== 开始学习流程开始 ===');
+        console.log('音频系统状态:', this.audioEnabled ? '已启用' : '未启用');
+        console.log('当前选择音效:', this.currentSound);
+        
         // 隐藏地址栏（全屏效果）
         if (window.scrollTo) {
             setTimeout(() => {
@@ -204,8 +253,36 @@ class StudyApp {
         // 请求屏幕常亮（防止锁屏）
         this.requestWakeLock();
         
-        // 播放白噪音
-        this.playSound();
+        // 恢复音频上下文（必须用户交互后调用）
+        if (this.audioContext) {
+            console.log('音频上下文状态:', this.audioContext.state);
+            if (this.audioContext.state === 'suspended') {
+                console.log('音频上下文被暂停，尝试恢复...');
+                this.audioContext.resume().then(() => {
+                    console.log('音频上下文恢复成功');
+                    // 播放白噪音
+                    setTimeout(() => {
+                        this.playSound();
+                    }, 100);
+                }).catch(err => {
+                    console.error('音频上下文恢复失败:', err);
+                });
+            } else {
+                console.log('音频上下文已激活，直接播放');
+                // 播放白噪音
+                setTimeout(() => {
+                    this.playSound();
+                }, 100);
+            }
+        } else {
+            console.log('音频上下文未初始化，尝试重新初始化');
+            this.initAudio();
+            if (this.audioContext) {
+                setTimeout(() => {
+                    this.playSound();
+                }, 100);
+            }
+        }
         
         // 显示开始语录
         this.showDialog('start');
@@ -223,6 +300,8 @@ class StudyApp {
                 this.completeStudy();
             }
         }, 1000);
+        
+        console.log('=== 开始学习流程结束 ===');
     }
     
     stopStudy() {
@@ -290,78 +369,148 @@ class StudyApp {
         this.updateDisplay();
     }
     
-    // 播放白噪音
+    // 播放白噪音（使用 Web Audio API 动态生成）
     playSound() {
         if (this.currentSound === 'none') {
             console.log('当前选择静音，不播放音频');
             return;
         }
         
-        const soundUrl = this.sounds[this.currentSound];
-        if (!soundUrl) {
-            console.log('未找到音频URL:', this.currentSound);
-            return;
+        try {
+            // 创建音频上下文（首次调用时）
+            if (!this.audioContext) {
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            
+            // 如果上下文被暂停，恢复它
+            if (this.audioContext.state === 'suspended') {
+                this.audioContext.resume();
+            }
+            
+            this.noiseType = this.currentSound;
+            this.generateAndPlayNoise();
+            
+            console.log('Web Audio API 白噪音已开始播放:', this.currentSound);
+        } catch (err) {
+            console.error('Web Audio API 初始化失败:', err);
+            this.showAudioError();
         }
+    }
+    
+    // 生成并播放白噪音
+    generateAndPlayNoise() {
+        console.log('生成并播放白噪音:', this.noiseType);
         
-        console.log('准备播放音频:', this.currentSound, 'URL:', soundUrl);
-        
-        // 创建音频对象
-        this.audio = new Audio();
-        this.audio.src = soundUrl;
-        this.audio.loop = true; // 循环播放
-        this.audio.volume = 0.3; // 音量30%
-        
-        // 监听音频事件
-        this.audio.addEventListener('canplaythrough', () => {
-            console.log('音频加载完成，可以播放');
-        });
-        
-        this.audio.addEventListener('error', (e) => {
-            console.error('音频加载错误:', e);
-            console.error('错误代码:', this.audio.error.code);
-            console.error('错误信息:', this.audio.error.message);
-        });
-        
-        this.audio.addEventListener('play', () => {
-            console.log('音频开始播放');
-        });
-        
-        this.audio.addEventListener('pause', () => {
-            console.log('音频暂停');
-        });
-        
-        // 播放音频（处理浏览器限制）
-        const playPromise = this.audio.play();
-        
-        if (playPromise !== undefined) {
-            playPromise.then(() => {
-                console.log('音频播放成功');
-            }).catch(err => {
-                console.error('音频播放失败:', err);
-                console.error('错误名称:', err.name);
-                console.error('错误信息:', err.message);
-                
-                // 显示用户提示
-                this.showAudioError();
-            });
+        try {
+            if (!this.audioContext) {
+                throw new Error('音频上下文未初始化');
+            }
+            
+            const sampleRate = this.audioContext.sampleRate;
+            console.log('采样率:', sampleRate);
+            
+            // 使用较小的缓冲区，减少内存占用
+            const bufferSize = Math.min(2 * sampleRate, this.audioContext.destination.maxChannelCount || 2);
+            console.log('缓冲区大小:', bufferSize);
+            
+            const noiseBuffer = this.audioContext.createBuffer(1, bufferSize, sampleRate);
+            const output = noiseBuffer.getChannelData(0);
+            
+            console.log('开始生成噪音数据...');
+            
+            // 根据类型生成不同的噪音
+            switch (this.noiseType) {
+                case 'rain':
+                    // 雨声 - 粉噪音（更柔和）
+                    for (let i = 0; i < bufferSize; i++) {
+                        output[i] = (Math.random() * 2 - 1) / (1 + i / bufferSize);
+                    }
+                    break;
+                case 'library':
+                    // 图书馆 - 棕噪音（更深沉）
+                    let lastOut = 0;
+                    for (let i = 0; i < bufferSize; i++) {
+                        const white = Math.random() * 2 - 1;
+                        output[i] = (lastOut + (0.1 * white)) / 1.1;
+                        lastOut = output[i];
+                    }
+                    break;
+                case 'cafe':
+                    // 咖啡馆 - 白噪音
+                    for (let i = 0; i < bufferSize; i++) {
+                        output[i] = (Math.random() * 2 - 1) * 0.3;
+                    }
+                    break;
+                default:
+                    // 默认白噪音
+                    for (let i = 0; i < bufferSize; i++) {
+                        output[i] = Math.random() * 2 - 1;
+                    }
+            }
+            
+            console.log('噪音数据生成完成');
+            
+            // 创建增益节点控制音量
+            this.gainNode = this.audioContext.createGain();
+            this.gainNode.gain.setValueAtTime(0.1, this.audioContext.currentTime); // 音量 10%
+            console.log('增益节点创建成功，音量设置为 10%');
+            
+            // 创建噪声源
+            this.noiseSource = this.audioContext.createBufferSource();
+            this.noiseSource.buffer = noiseBuffer;
+            this.noiseSource.loop = true;
+            
+            console.log('噪声源创建成功');
+            
+            // 连接节点
+            this.noiseSource.connect(this.gainNode);
+            this.gainNode.connect(this.audioContext.destination);
+            
+            console.log('音频节点连接成功');
+            
+            // 开始播放
+            this.noiseSource.start(0);
+            
+            console.log('白噪音播放成功！');
+            
+        } catch (err) {
+            console.error('生成或播放白噪音失败:', err);
+            console.error('错误名称:', err.name);
+            console.error('错误信息:', err.message);
+            throw err;
         }
     }
     
     // 停止白噪音
     stopSound() {
-        if (this.audio) {
-            console.log('停止音频播放');
-            this.audio.pause();
-            this.audio.currentTime = 0;
-            this.audio = null;
+        if (this.noiseSource) {
+            console.log('停止 Web Audio API 白噪音');
+            try {
+                this.noiseSource.stop();
+                this.noiseSource.disconnect();
+                this.gainNode.disconnect();
+            } catch (e) {
+                console.log('停止音频时发生错误（可能已停止）:', e);
+            }
+            this.noiseSource = null;
+            this.gainNode = null;
+        }
+    }
+    
+    // 更新音效（切换音效时使用）
+    updateSound() {
+        if (this.isRunning) {
+            this.stopSound();
+            setTimeout(() => {
+                this.playSound();
+            }, 100);
         }
     }
     
     // 显示音频错误提示
     showAudioError() {
         console.log('显示音频错误提示');
-        // 可以在这里添加UI提示
-        alert('音频播放失败，请检查：\n1. 手机是否静音\n2. 浏览器是否允许自动播放\n3. 网络连接是否正常');
+        alert('音频播放失败，请检查：\n1. 手机是否静音\n2. 浏览器是否允许音频播放\n3. 刷新页面重试');
     }
     
     // 更新音效
