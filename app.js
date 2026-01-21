@@ -12,17 +12,17 @@ class StudyApp {
         this.audio = null; // 白噪音音频对象
         this.currentSound = 'none'; // 当前选择的音效
         this.audioEnabled = false; // 音频是否启用
-        
+
         // 统计数据
         this.stats = {
             todayTime: 0,
             escapeCount: 0,
             completeCount: 0
         };
-        
+
         // 加载统计数据
         this.loadStats();
-        
+
         // 音效配置
         this.sounds = {
             none: null,
@@ -30,13 +30,13 @@ class StudyApp {
             library: 'library',
             cafe: 'cafe'
         };
-        
+
         // Web Audio API 上下文
         this.audioContext = null;
         this.gainNode = null;
         this.noiseSource = null;
         this.noiseType = null;
-        
+
         // CloudBase配置
         this.cloudbase = null;
         this.db = null;
@@ -48,6 +48,9 @@ class StudyApp {
 
         // 初始化CloudBase
         this.initCloudBase();
+
+        // 初始化视觉效果
+        this.initVisualEffects();
 
         // 毒舌语录库
         this.quotes = {
@@ -128,6 +131,100 @@ class StudyApp {
             console.error('错误信息:', err.message);
             alert('音频初始化失败: ' + err.message);
             this.audioEnabled = false;
+        }
+    }
+
+    // 初始化视觉效果
+    initVisualEffects() {
+        console.log('初始化视觉效果...');
+        this.createStars();
+        this.createParticles();
+    }
+
+    // 创建星星背景
+    createStars() {
+        const starsContainer = document.getElementById('stars');
+        if (!starsContainer) return;
+
+        const starCount = 50;
+        for (let i = 0; i < starCount; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.animationDelay = Math.random() * 3 + 's';
+            star.style.animationDuration = (2 + Math.random() * 3) + 's';
+            starsContainer.appendChild(star);
+        }
+    }
+
+    // 创建时间流逝粒子
+    createParticles() {
+        const particlesContainer = document.getElementById('timeParticles');
+        if (!particlesContainer) return;
+
+        this.particles = [];
+        const particleCount = 20;
+
+        for (let i = 0; i < particleCount; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDuration = (3 + Math.random() * 4) + 's';
+            particle.style.animationDelay = Math.random() * 5 + 's';
+            particlesContainer.appendChild(particle);
+            this.particles.push(particle);
+        }
+
+        // 学习时加快粒子速度
+        setInterval(() => {
+            if (this.isRunning) {
+                this.particles.forEach(particle => {
+                    const currentDuration = parseFloat(particle.style.animationDuration);
+                    if (currentDuration > 1.5) {
+                        particle.style.animationDuration = (currentDuration - 0.1) + 's';
+                    }
+                });
+            } else {
+                this.particles.forEach(particle => {
+                    particle.style.animationDuration = (3 + Math.random() * 4) + 's';
+                });
+            }
+        }, 3000);
+    }
+
+    // 更新进度环
+    updateProgressRing() {
+        const circle = document.querySelector('.progress-ring-circle');
+        if (!circle) return;
+
+        const radius = 90;
+        const circumference = 2 * Math.PI * radius;
+        const progress = this.remainingTime / (this.selectedTime * 60);
+        const offset = circumference - (progress * circumference);
+
+        circle.style.strokeDashoffset = offset;
+
+        // 根据剩余时间调整颜色和效果
+        const timerRing = document.querySelector('.timer-ring');
+        if (progress <= 0.2) {
+            // 最后20%时间，红色警告
+            circle.style.stroke = '#ff4444';
+            if (timerRing) {
+                timerRing.style.animation = 'ring-rotate 2s linear infinite';
+            }
+        } else if (progress <= 0.5) {
+            // 最后50%时间，橙色
+            circle.style.stroke = '#ffaa00';
+            if (timerRing) {
+                timerRing.style.animation = 'ring-rotate 5s linear infinite';
+            }
+        } else {
+            // 正常时间，使用渐变
+            circle.style.stroke = 'url(#timerGradient)';
+            if (timerRing) {
+                timerRing.style.animation = 'ring-rotate 20s linear infinite';
+            }
         }
     }
     
@@ -1291,10 +1388,17 @@ class StudyApp {
         document.getElementById('startBtn').classList.add('hidden');
         document.getElementById('stopBtn').classList.remove('hidden');
 
+        // 添加运行状态类
+        document.querySelector('.timer-display').classList.add('running');
+
+        // 初始化进度环
+        this.updateProgressRing();
+
         // 开始计时
         this.timer = setInterval(() => {
             this.remainingTime--;
             this.updateDisplay();
+            this.updateProgressRing();
 
             if (this.remainingTime <= 0) {
                 this.completeStudy();
@@ -1309,6 +1413,9 @@ class StudyApp {
 
         clearInterval(this.timer);
         this.isRunning = false;
+
+        // 移除运行状态类
+        document.querySelector('.timer-display').classList.remove('running');
 
         // 释放屏幕常亮
         this.releaseWakeLock();
@@ -1345,6 +1452,9 @@ class StudyApp {
     completeStudy() {
         clearInterval(this.timer);
         this.isRunning = false;
+
+        // 移除运行状态类
+        document.querySelector('.timer-display').classList.remove('running');
 
         // 释放屏幕常亮
         this.releaseWakeLock();
@@ -1387,6 +1497,7 @@ class StudyApp {
         document.getElementById('stopBtn').classList.add('hidden');
         this.remainingTime = this.selectedTime * 60;
         this.updateDisplay();
+        this.updateProgressRing();
     }
     
     // 播放白噪音（使用 Web Audio API 动态生成）

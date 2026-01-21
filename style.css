@@ -82,21 +82,249 @@ body {
 
 .timer-wrapper {
     text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 时间进度环 */
+.timer-ring {
+    position: relative;
+    width: 300px;
+    height: 300px;
+}
+
+.progress-ring {
+    transform: rotate(-90deg);
+    width: 100%;
+    height: 100%;
+}
+
+.progress-ring-bg {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.1);
+    stroke-width: 8;
+}
+
+.progress-ring-circle {
+    fill: none;
+    stroke: url(#timerGradient);
+    stroke-width: 8;
+    stroke-linecap: round;
+    stroke-dasharray: 565.48;
+    stroke-dashoffset: 0;
+    transition: stroke-dashoffset 0.5s ease;
+    filter: drop-shadow(0 0 10px rgba(255, 200, 100, 0.5));
+}
+
+/* 进度环动画 */
+@keyframes pulse-ring {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.02);
+        opacity: 0.8;
+    }
+}
+
+.timer-inner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .countdown {
-    font-size: 80px;
+    font-size: 72px;
     font-weight: bold;
     color: #fff;
-    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
-    letter-spacing: 2px;
-    margin-top: 20px;
+    text-shadow: 0 0 30px rgba(255, 255, 255, 0.5), 0 0 60px rgba(255, 200, 100, 0.3);
+    letter-spacing: 3px;
+    animation: text-glow 2s ease-in-out infinite;
+}
+
+/* 文字发光动画 */
+@keyframes text-glow {
+    0%, 100% {
+        text-shadow: 0 0 30px rgba(255, 255, 255, 0.5), 0 0 60px rgba(255, 200, 100, 0.3);
+    }
+    50% {
+        text-shadow: 0 0 50px rgba(255, 255, 255, 0.8), 0 0 80px rgba(255, 200, 100, 0.6);
+    }
 }
 
 .timer-subtitle {
     font-size: 16px;
     color: rgba(255, 255, 255, 0.7);
     margin-top: 10px;
+    animation: subtitle-fade 3s ease-in-out infinite;
+}
+
+@keyframes subtitle-fade {
+    0%, 100% {
+        opacity: 0.7;
+    }
+    50% {
+        opacity: 1;
+    }
+}
+
+/* 时间流逝粒子效果 */
+.time-particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: rgba(255, 200, 100, 0.8);
+    border-radius: 50%;
+    animation: particle-fall linear infinite;
+    box-shadow: 0 0 10px rgba(255, 200, 100, 0.5);
+}
+
+@keyframes particle-fall {
+    0% {
+        transform: translateY(-10px) translateX(0);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(100vh) translateX(50px);
+        opacity: 0;
+    }
+}
+
+/* 星星背景 */
+.stars {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: #fff;
+    border-radius: 50%;
+    animation: star-twinkle 2s ease-in-out infinite;
+}
+
+@keyframes star-twinkle {
+    0%, 100% {
+        opacity: 0.3;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.5);
+    }
+}
+
+/* 流星效果 */
+.shooting-star {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: linear-gradient(45deg, rgba(255, 255, 255, 1), rgba(255, 200, 100, 0.8), transparent);
+    border-radius: 50%;
+    opacity: 0;
+    pointer-events: none;
+    animation: shooting 4s linear infinite;
+    animation-delay: 3s;
+}
+
+.shooting-star::after {
+    content: '';
+    position: absolute;
+    width: 150px;
+    height: 2px;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.8), rgba(255, 200, 100, 0.5));
+    transform: translate(-150px, -1px) rotate(45deg);
+    animation: shooting-tail 4s linear infinite;
+    animation-delay: 3s;
+}
+
+@keyframes shooting {
+    0% {
+        transform: translate(0, 0);
+        opacity: 0;
+    }
+    5% {
+        opacity: 1;
+    }
+    25% {
+        transform: translate(400px, 400px);
+        opacity: 0;
+    }
+    100% {
+        transform: translate(400px, 400px);
+        opacity: 0;
+    }
+}
+
+@keyframes shooting-tail {
+    0% {
+        width: 0;
+    }
+    5% {
+        width: 150px;
+    }
+    25% {
+        width: 150px;
+    }
+    100% {
+        width: 150px;
+    }
+}
+
+/* 学习中的时间环动画 */
+.timer-display.running .progress-ring-circle {
+    animation: progress-pulse 1s ease-in-out infinite;
+}
+
+@keyframes progress-pulse {
+    0%, 100% {
+        filter: drop-shadow(0 0 10px rgba(255, 200, 100, 0.5));
+    }
+    50% {
+        filter: drop-shadow(0 0 20px rgba(255, 200, 100, 0.8));
+    }
+}
+
+.timer-display.running .timer-ring {
+    animation: ring-rotate 20s linear infinite;
+}
+
+@keyframes ring-rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .time-selector {
@@ -371,18 +599,6 @@ body {
     gap: 15px;
     justify-content: center;
     flex-wrap: wrap;
-}
-
-/* 白噪音选择器样式 */
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    border-radius: 20px;
-    padding: 30px;
-    max-width: 450px;
-    width: 90%;
-    border: 2px solid rgba(255, 107, 107, 0.3);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
 }
 
 .groups-header, .group-detail-header {
@@ -845,18 +1061,6 @@ body {
     gap: 15px;
     justify-content: center;
     flex-wrap: wrap;
-}
-
-/* 白噪音选择器样式 */
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    border-radius: 20px;
-    padding: 30px;
-    max-width: 450px;
-    width: 90%;
-    border: 2px solid rgba(255, 107, 107, 0.3);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
 }
 
 .groups-header, .group-detail-header {
@@ -1380,9 +1584,14 @@ body {
     }
     
     .countdown {
-        font-size: 90px;
+        font-size: 80px;
         letter-spacing: 3px;
         margin-top: 30px;
+    }
+
+    .timer-ring {
+        width: 260px;
+        height: 260px;
     }
     
     .timer-subtitle {
