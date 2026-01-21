@@ -312,6 +312,32 @@ class StudyApp {
         this.bindEvents();
         this.updateDisplay();
         this.checkVisibility();
+        this.preventScrollJump();
+    }
+
+    // 防止页面滚动跳动
+    preventScrollJump() {
+        // 保存初始滚动位置
+        window.addEventListener('load', () => {
+            window.scrollTo(0, 0);
+            document.body.scrollTop = 0;
+            document.documentElement.scrollTop = 0;
+        });
+
+        // 阻止页面滚动
+        document.body.addEventListener('touchmove', (e) => {
+            if (e.target.closest('.dialog-overlay') || e.target.closest('.modal-overlay')) {
+                return; // 允许弹窗内滚动
+            }
+            e.preventDefault();
+        }, { passive: false });
+
+        // 防止下拉刷新
+        document.body.addEventListener('touchstart', (e) => {
+            if (window.scrollY === 0 && e.touches[0].clientY > 50) {
+                e.preventDefault();
+            }
+        }, { passive: false });
     }
     
     bindEvents() {
